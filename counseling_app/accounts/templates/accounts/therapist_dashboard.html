@@ -1,0 +1,357 @@
+{% extends 'accounts/base.html' %}
+
+{% block title %}Therapist Dashboard | Aura{% endblock %}
+
+{% block extra_head %}
+<style>
+    .dashboard-grid {
+        display: grid;
+        grid-template-columns: 1fr 1.5fr;
+        gap: 2rem;
+        width: 100%;
+        max-width: 1200px;
+        margin-top: 1rem;
+    }
+
+    @media (max-width: 900px) {
+        .dashboard-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    .widget {
+        background: var(--card-bg);
+        border: 1px solid var(--card-border);
+        border-radius: var(--radius);
+        padding: 2rem;
+        box-shadow: var(--shadow);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+        height: fit-content;
+    }
+
+    .widget-title {
+        font-family: 'Outfit', sans-serif;
+        font-size: 1.4rem;
+        font-weight: 700;
+        border-bottom: 1px solid var(--card-border);
+        padding-bottom: 0.75rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .session-list {
+        list-style: none;
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+        max-height: 550px;
+        overflow-y: auto;
+    }
+
+    .session-card {
+        background: rgba(255, 255, 255, 0.02);
+        border: 1px solid var(--card-border);
+        padding: 1rem;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: var(--transition);
+    }
+
+    .session-card:hover {
+        border-color: var(--accent);
+        background: rgba(255, 255, 255, 0.05);
+        transform: translateY(-2px);
+    }
+
+    .session-card.active {
+        border-color: var(--primary);
+        background: rgba(124, 58, 237, 0.08);
+        box-shadow: 0 0 10px rgba(124, 58, 237, 0.2);
+    }
+
+    .badge {
+        padding: 0.2rem 0.6rem;
+        border-radius: 9999px;
+        font-size: 0.75rem;
+        font-weight: 600;
+    }
+
+    .badge-primary { background: rgba(124, 58, 237, 0.2); color: #c084fc; }
+    .badge-success { background: rgba(16, 185, 129, 0.2); color: #34d399; }
+    .badge-danger { background: rgba(239, 68, 68, 0.2); color: #f87171; }
+    .badge-info { background: rgba(59, 130, 246, 0.2); color: #60a5fa; }
+
+    .btn-action {
+        background: var(--accent);
+        border: none;
+        color: #0a0518;
+        padding: 0.5rem 1rem;
+        border-radius: 6px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: var(--transition);
+        font-size: 0.85rem;
+    }
+
+    .btn-action:hover {
+        background: white;
+        box-shadow: 0 0 8px rgba(34, 211, 238, 0.4);
+    }
+
+    .btn-outline {
+        background: transparent;
+        border: 1px solid var(--card-border);
+        color: var(--text-primary);
+        padding: 0.5rem 1rem;
+        border-radius: 6px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: var(--transition);
+        font-size: 0.85rem;
+    }
+
+    .btn-outline:hover {
+        background: rgba(255, 255, 255, 0.05);
+        border-color: var(--accent);
+    }
+
+    .loading-spinner {
+        text-align: center;
+        color: var(--text-muted);
+        padding: 2rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<h1 class="page-title" style="text-align: left; width: 100%; max-width: 1200px;">Therapist Workspace</h1>
+<p class="page-subtitle" style="text-align: left; width: 100%; max-width: 1200px; margin-top: -1.25rem; margin-bottom: 1.5rem;">
+    Review upcoming patient requests and log diagnostic session summary notes powered by Claude AI insights.
+</p>
+
+<div class="dashboard-grid">
+    <!-- Left Column: Appointments List -->
+    <div class="widget">
+        <h2 class="widget-title">Assigned Sessions</h2>
+        <ul class="session-list" id="session-list">
+            <li class="loading-spinner">Loading appointments...</li>
+        </ul>
+    </div>
+
+    <!-- Right Column: Clinical Notes Workspace -->
+    <div class="widget" id="notes-workspace">
+        <h2 class="widget-title">Clinical Notes Workspace</h2>
+        <div id="no-selection-msg" style="text-align: center; color: var(--text-muted); padding: 4rem 1rem;">
+            <p style="font-size: 1.1rem; margin-bottom: 0.5rem;">No Appointment Selected</p>
+            <p style="font-size: 0.9rem;">Select an appointment from the left sidebar to start compiling session records and summaries.</p>
+        </div>
+        
+        <div id="workspace-content" style="display: none; flex-direction: column; gap: 1.25rem;">
+            <div style="background: rgba(255, 255, 255, 0.02); border: 1px solid var(--card-border); border-radius: 8px; padding: 1rem;">
+                <h3 id="patient-title" style="font-family:'Outfit'; font-size:1.25rem; font-weight:700;">Patient: John Doe</h3>
+                <p id="patient-details" style="color:var(--text-secondary); font-size:0.85rem; margin-top:0.25rem;">Session: YYYY-MM-DD at HH:MM</p>
+                <p id="patient-reason" style="font-size:0.9rem; margin-top:0.5rem; border-top:1px dashed var(--card-border); padding-top:0.5rem;"></p>
+            </div>
+
+            <div class="form-group">
+                <label for="private-note">Private Clinical Note</label>
+                <textarea id="private-note" rows="5" placeholder="Record raw diagnostic notes and session logs here. These are private to you."></textarea>
+            </div>
+
+            <div style="display: flex; justify-content: flex-start; gap: 1rem; align-items: center;">
+                <button class="btn-action" onclick="generateAISummary()">Generate AI Summary</button>
+                <span id="ai-status" style="font-size: 0.8rem; color: var(--text-muted);"></span>
+            </div>
+
+            <div class="form-group">
+                <label for="shared-summary">Shared Patient Summary</label>
+                <textarea id="shared-summary" rows="3" placeholder="Provide general feedback and advice that the patient can review in their dashboard."></textarea>
+            </div>
+
+            <div class="form-group">
+                <label for="ai-summary">AI Summary Log (Generated)</label>
+                <textarea id="ai-summary" rows="3" placeholder="Click 'Generate AI Summary' to populate clinical observations from your private note using Claude AI."></textarea>
+            </div>
+
+            <div style="display: flex; gap: 0.5rem; margin-top: 0.5rem;">
+                <button class="btn-submit" onclick="saveSessionNotes()" style="flex:1; margin:0; padding:0.85rem;">Save Session Records</button>
+                <button class="btn-outline" onclick="closeWorkspace()">Cancel</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const csrfToken = '{{ csrf_token }}';
+    let currentAppointmentId = null;
+
+    // Load on start
+    window.addEventListener('DOMContentLoaded', () => {
+        loadAppointments();
+    });
+
+    // Fetch Appointments list
+    function loadAppointments() {
+        fetch('/appointments/')
+        .then(res => res.json())
+        .then(data => {
+            const list = document.getElementById('session-list');
+            list.innerHTML = '';
+            if (!data.appointments || data.appointments.length === 0) {
+                list.innerHTML = '<li class="loading-spinner">No appointments assigned.</li>';
+                return;
+            }
+
+            data.appointments.forEach(a => {
+                const li = document.createElement('li');
+                li.className = 'session-card';
+                if (currentAppointmentId === a.id) {
+                    li.classList.add('active');
+                }
+                
+                let badgeClass = 'badge-info';
+                if (a.status === 'confirmed') badgeClass = 'badge-success';
+                if (a.status === 'cancelled') badgeClass = 'badge-danger';
+                if (a.status === 'completed') badgeClass = 'badge-primary';
+
+                li.onclick = () => selectAppointment(a);
+                
+                li.innerHTML = `
+                    <div style="display:flex; justify-content:space-between; align-items:center; font-weight:600;">
+                        <span>Patient: ${a.patient}</span>
+                        <span class="badge ${badgeClass}">${a.status.toUpperCase()}</span>
+                    </div>
+                    <div style="color:var(--text-secondary); font-size:0.8rem; margin-top:0.25rem;">
+                        Date: ${a.date} at ${a.time}
+                    </div>
+                    <div style="color:var(--text-muted); font-size:0.75rem; margin-top:0.5rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
+                        Reason: ${a.reason || 'None specified'}
+                    </div>
+                `;
+                list.appendChild(li);
+            });
+        })
+        .catch(err => console.error(err));
+    }
+
+    // Select Appointment & Populate Workspace
+    function selectAppointment(app) {
+        currentAppointmentId = app.id;
+        
+        // Highlight active card
+        document.querySelectorAll('.session-card').forEach(card => card.classList.remove('active'));
+        event.currentTarget.classList.add('active');
+
+        // Hide default panel & show workspace
+        document.getElementById('no-selection-msg').style.display = 'none';
+        document.getElementById('workspace-content').style.display = 'flex';
+
+        // Load details
+        document.getElementById('patient-title').innerText = `Patient: ${app.patient}`;
+        document.getElementById('patient-details').innerText = `Session: ${app.date} at ${app.time} (ID: ${app.id})`;
+        document.getElementById('patient-reason').innerHTML = `<strong>Session Reason:</strong> ${app.reason || 'None specified'}`;
+
+        // Reset inputs
+        document.getElementById('private-note').value = '';
+        document.getElementById('shared-summary').value = '';
+        document.getElementById('ai-summary').value = '';
+        document.getElementById('ai-status').innerText = '';
+
+        // Load existing notes from server
+        fetch(`/appointments/notes/${app.id}/`)
+        .then(res => res.json())
+        .then(data => {
+            if (!data.error) {
+                document.getElementById('private-note').value = data.private_note || '';
+                document.getElementById('shared-summary').value = data.shared_summary || '';
+                document.getElementById('ai-summary').value = data.ai_summary || '';
+            }
+        })
+        .catch(err => console.error(err));
+    }
+
+    // Generate AI Summary using Claude Service
+    function generateAISummary() {
+        const privateNote = document.getElementById('private-note').value.trim();
+        if (!privateNote) {
+            alert('Please write clinical notes in the Private Note field first.');
+            return;
+        }
+
+        const statusLabel = document.getElementById('ai-status');
+        statusLabel.innerText = 'Claude is summarizing...';
+        statusLabel.style.color = 'var(--accent)';
+
+        fetch('/api/summarise/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrfToken
+            },
+            body: JSON.stringify({
+                note_text: privateNote
+            })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.summary) {
+                document.getElementById('ai-summary').value = data.summary;
+                statusLabel.innerText = 'Summary generated successfully!';
+                statusLabel.style.color = 'var(--success)';
+            } else {
+                statusLabel.innerText = 'AI service check failed.';
+                statusLabel.style.color = 'var(--error)';
+            }
+        })
+        .catch(err => {
+            console.error(err);
+            statusLabel.innerText = 'Connection error.';
+            statusLabel.style.color = 'var(--error)';
+        });
+    }
+
+    // Save notes to server
+    function saveSessionNotes() {
+        if (!currentAppointmentId) return;
+
+        const privateNote = document.getElementById('private-note').value;
+        const sharedSummary = document.getElementById('shared-summary').value;
+        const aiSummary = document.getElementById('ai-summary').value;
+
+        fetch(`/appointments/notes/${currentAppointmentId}/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrfToken
+            },
+            body: JSON.stringify({
+                private_note: privateNote,
+                shared_summary: sharedSummary,
+                ai_summary: aiSummary
+            })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                alert('Session records saved successfully!');
+            } else {
+                alert('Error saving records: ' + (data.error || 'Unknown error'));
+            }
+        })
+        .catch(err => console.error(err));
+    }
+
+    // Close Workspace
+    function closeWorkspace() {
+        currentAppointmentId = null;
+        document.querySelectorAll('.session-card').forEach(card => card.classList.remove('active'));
+        document.getElementById('no-selection-msg').style.display = 'block';
+        document.getElementById('workspace-content').style.display = 'none';
+    }
+</script>
+{% endblock %}

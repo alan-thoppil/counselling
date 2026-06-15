@@ -1,0 +1,2 @@
+python_interpreter = "counseling_app/venv/Scripts/python.exe"
+search_path = ["counseling_app"]
