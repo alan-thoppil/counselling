@@ -1,0 +1,325 @@
+{% extends 'accounts/base.html' %}
+
+{% block title %}Aura - AI-Assisted Psychology & Counseling{% endblock %}
+
+{% block extra_head %}
+<style>
+    /* Hero Section Styles */
+    .hero-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        padding: 5rem 1rem 3rem 1rem;
+        max-width: 900px;
+        margin: 0 auto;
+        position: relative;
+    }
+
+    .hero-badge {
+        background: rgba(124, 58, 237, 0.15);
+        border: 1px solid rgba(124, 58, 237, 0.3);
+        color: #c084fc;
+        padding: 0.5rem 1.25rem;
+        border-radius: 9999px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        margin-bottom: 2rem;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+        animation: fadeInDown 0.6s ease-out;
+    }
+
+    .hero-title {
+        font-family: 'Outfit', sans-serif;
+        font-size: 4rem;
+        font-weight: 800;
+        line-height: 1.15;
+        letter-spacing: -0.03em;
+        margin-bottom: 1.5rem;
+        background: linear-gradient(135deg, #ffffff 0%, #a78bfa 50%, #22d3ee 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        animation: fadeInUp 0.8s ease-out;
+    }
+
+    .hero-subtitle {
+        font-size: 1.25rem;
+        color: var(--text-secondary);
+        max-width: 700px;
+        margin-bottom: 3rem;
+        line-height: 1.6;
+        animation: fadeInUp 1s ease-out;
+    }
+
+    .hero-ctas {
+        display: flex;
+        gap: 1.25rem;
+        justify-content: center;
+        flex-wrap: wrap;
+        animation: fadeInUp 1.2s ease-out;
+    }
+
+    .btn-hero-primary {
+        background: var(--primary);
+        color: white;
+        text-decoration: none;
+        padding: 1rem 2.25rem;
+        border-radius: 9999px;
+        font-weight: 600;
+        font-size: 1.05rem;
+        transition: var(--transition);
+        box-shadow: 0 4px 20px rgba(124, 58, 237, 0.3);
+    }
+
+    .btn-hero-primary:hover {
+        background: var(--primary-hover);
+        transform: translateY(-2px);
+        box-shadow: 0 8px 30px rgba(124, 58, 237, 0.5);
+    }
+
+    .btn-hero-secondary {
+        background: rgba(255, 255, 255, 0.05);
+        color: white;
+        text-decoration: none;
+        padding: 1rem 2.25rem;
+        border-radius: 9999px;
+        font-weight: 600;
+        font-size: 1.05rem;
+        border: 1px solid var(--card-border);
+        transition: var(--transition);
+    }
+
+    .btn-hero-secondary:hover {
+        background: rgba(255, 255, 255, 0.1);
+        border-color: rgba(255, 255, 255, 0.2);
+        transform: translateY(-2px);
+    }
+
+    /* Features Section Styles */
+    .section-title {
+        font-family: 'Outfit', sans-serif;
+        font-size: 2.5rem;
+        font-weight: 700;
+        text-align: center;
+        margin-top: 6rem;
+        margin-bottom: 1rem;
+        letter-spacing: -0.02em;
+    }
+
+    .section-subtitle {
+        color: var(--text-secondary);
+        text-align: center;
+        max-width: 600px;
+        margin: 0 auto 4rem auto;
+        font-size: 1.05rem;
+        line-height: 1.5;
+    }
+
+    .features-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+        gap: 2rem;
+        width: 100%;
+        max-width: 1100px;
+        margin: 0 auto;
+    }
+
+    .feature-card {
+        background: var(--card-bg);
+        border: 1px solid var(--card-border);
+        border-radius: var(--radius);
+        padding: 2.5rem 2rem;
+        transition: var(--transition);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        display: flex;
+        flex-direction: column;
+        gap: 1.25rem;
+    }
+
+    .feature-card:hover {
+        transform: translateY(-5px);
+        border-color: rgba(34, 211, 238, 0.3);
+        box-shadow: 0 10px 30px rgba(34, 211, 238, 0.08);
+    }
+
+    .feature-icon {
+        width: 50px;
+        height: 50px;
+        background: rgba(34, 211, 238, 0.1);
+        border: 1px solid rgba(34, 211, 238, 0.2);
+        color: var(--accent);
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+    }
+
+    .feature-card:nth-child(2) .feature-icon {
+        background: rgba(167, 139, 250, 0.1);
+        border-color: rgba(167, 139, 250, 0.2);
+        color: #a78bfa;
+    }
+
+    .feature-card:nth-child(3) .feature-icon {
+        background: rgba(16, 185, 129, 0.1);
+        border-color: rgba(16, 185, 129, 0.2);
+        color: var(--success);
+    }
+
+    .feature-card:nth-child(4) .feature-icon {
+        background: rgba(239, 68, 68, 0.1);
+        border-color: rgba(239, 68, 68, 0.2);
+        color: var(--error);
+    }
+
+    .feature-title {
+        font-family: 'Outfit', sans-serif;
+        font-size: 1.35rem;
+        font-weight: 600;
+        color: white;
+    }
+
+    .feature-desc {
+        color: var(--text-secondary);
+        font-size: 0.95rem;
+        line-height: 1.6;
+    }
+
+    /* Stats Grid */
+    .stats-card {
+        background: var(--card-bg);
+        border: 1px solid var(--card-border);
+        border-radius: var(--radius);
+        padding: 3rem;
+        width: 100%;
+        max-width: 1100px;
+        margin: 6rem auto 3rem auto;
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        display: flex;
+        justify-content: space-around;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 3rem;
+    }
+
+    .stat-item {
+        text-align: center;
+        flex: 1;
+        min-width: 180px;
+    }
+
+    .stat-num {
+        font-family: 'Outfit', sans-serif;
+        font-size: 3.5rem;
+        font-weight: 800;
+        background: linear-gradient(135deg, var(--accent) 0%, var(--primary) 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        margin-bottom: 0.5rem;
+        letter-spacing: -0.03em;
+    }
+
+    .stat-label {
+        font-size: 0.9rem;
+        font-weight: 600;
+        color: var(--text-secondary);
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+    }
+
+    /* Animations */
+    @keyframes fadeInUp {
+        from { transform: translateY(20px); opacity: 0; }
+        to { transform: translateY(0); opacity: 1; }
+    }
+
+    @keyframes fadeInDown {
+        from { transform: translateY(-20px); opacity: 0; }
+        to { transform: translateY(0); opacity: 1; }
+    }
+
+    @media (max-width: 768px) {
+        .hero-title {
+            font-size: 2.75rem;
+        }
+        .hero-subtitle {
+            font-size: 1.1rem;
+        }
+        .stats-card {
+            flex-direction: column;
+            gap: 2.5rem;
+            padding: 2.5rem 1.5rem;
+        }
+        .stat-item {
+            border-bottom: 1px solid var(--card-border);
+            padding-bottom: 1.5rem;
+            width: 100%;
+        }
+        .stat-item:last-child {
+            border-bottom: none;
+            padding-bottom: 0;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="hero-container">
+    <div class="hero-badge">AI-Powered Compassionate Counseling</div>
+    <h1 class="hero-title">Your Path to Mental Clarity & Peace</h1>
+    <p class="hero-subtitle">Experience a new era of emotional well-being. Aura integrates advanced AI support tools with personalized therapist care to empower your mental health journey.</p>
+    
+    <div class="hero-ctas">
+        <a href="{% url 'register_patient' %}" class="btn-hero-primary">Start Your Journey</a>
+        <a href="{% url 'login' %}" class="btn-hero-secondary">Log In to Dashboard</a>
+    </div>
+</div>
+
+<h2 class="section-title">Explore Aura Features</h2>
+<p class="section-subtitle">A comprehensive suite of digital mental health tools designed to support you every step of the way.</p>
+
+<div class="features-grid">
+    <div class="feature-card">
+        <div class="feature-icon">🤖</div>
+        <h3 class="feature-title">AI Supportive Chat</h3>
+        <p class="feature-desc">Get instant, non-judgmental support 24/7. Our AI assistant helps you process emotions and provides immediate coping techniques.</p>
+    </div>
+    
+    <div class="feature-card">
+        <div class="feature-icon">🤝</div>
+        <h3 class="feature-title">Therapist Matching</h3>
+        <p class="feature-desc">Our intelligent algorithm matches you with certified practitioners tailored to your personal background, needs, and lifestyle.</p>
+    </div>
+    
+    <div class="feature-card">
+        <div class="feature-icon">📊</div>
+        <h3 class="feature-title">Mood & Sentiment Log</h3>
+        <p class="feature-desc">Track your daily mood triggers and write guided journals. Automatic AI sentiment checks visualize your emotional trends over time.</p>
+    </div>
+    
+    <div class="feature-card">
+        <div class="feature-icon">📝</div>
+        <h3 class="feature-title">Self-Assessments</h3>
+        <p class="feature-desc">Take clinically validated psychological tests like GAD-7 and PHQ-9. Instantly receive severity analyses and guidance.</p>
+    </div>
+</div>
+
+<div class="stats-card">
+    <div class="stat-item">
+        <div class="stat-num">10k+</div>
+        <div class="stat-label">Active Users</div>
+    </div>
+    <div class="stat-item">
+        <div class="stat-num">50+</div>
+        <div class="stat-label">Licensed Therapists</div>
+    </div>
+    <div class="stat-item">
+        <div class="stat-num">98%</div>
+        <div class="stat-label">Support Satisfaction</div>
+    </div>
+</div>
+{% endblock %}

@@ -86,4 +86,4 @@ def index(request):
             elif request.user.is_therapist():
                 return redirect('therapist_dashboard')
         return redirect('/admin/')
-    return redirect('login')
+    return render(request, 'accounts/index.html')
