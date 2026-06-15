@@ -1,6 +1,8 @@
 import logging
 from django.conf import settings
 from anthropic import Anthropic
+from anthropic.types import MessageParam
+from typing import cast, List
 
 logger = logging.getLogger(__name__)
 
@@ -26,15 +28,15 @@ def get_chatbot_response(user_message, conversation_history=None):
         client = Anthropic(api_key=api_key)
 
         # Build clean message history adhering to roles supported by Anthropic (user / assistant)
-        messages = []
+        messages: List[MessageParam] = []
         for msg in conversation_history:
             role = msg.get('role')
             content = msg.get('content')
             if role in ['user', 'assistant'] and content:
-                messages.append({
+                messages.append(cast(MessageParam, {
                     'role': role,
                     'content': content
-                })
+                }))
 
         # Append current user message
         messages.append({
@@ -60,7 +62,8 @@ def get_chatbot_response(user_message, conversation_history=None):
         )
 
         if response.content:
-            return response.content[0].text
+            first_block = response.content[0]
+            return getattr(first_block, 'text', '')
         else:
             return (
                 "I am here to support you. I cannot diagnose conditions. Please consider "

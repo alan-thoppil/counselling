@@ -43,7 +43,8 @@ def summarise_session_note(note_text):
         )
 
         if response.content:
-            return response.content[0].text.strip()
+            first_block = response.content[0]
+            return getattr(first_block, 'text', '').strip()
 
         return "Could not generate summary."
 

@@ -125,63 +125,286 @@
         color: var(--text-muted);
         padding: 2rem;
     }
+
+    /* Tabs styling */
+    .tabs-container {
+        display: flex;
+        gap: 1rem;
+        margin-bottom: 2rem;
+        border-bottom: 1px solid var(--card-border);
+        width: 100%;
+        max-width: 1200px;
+    }
+
+    .tab-btn {
+        background: none;
+        border: none;
+        color: var(--text-secondary);
+        font-family: 'Outfit', sans-serif;
+        font-size: 1.1rem;
+        font-weight: 600;
+        cursor: pointer;
+        padding: 0.75rem 1.25rem;
+        border-bottom: 3px solid transparent;
+        transition: var(--transition);
+        position: relative;
+    }
+
+    .tab-btn:hover {
+        color: var(--accent);
+    }
+
+    .tab-btn.active {
+        color: var(--accent);
+        border-bottom-color: var(--accent);
+    }
+
+    .tab-content {
+        display: none;
+        width: 100%;
+    }
+
+    .tab-content.active {
+        display: block;
+    }
+    
+    .badge-tab {
+        background: var(--error);
+        color: white;
+        border-radius: 50%;
+        padding: 0.15rem 0.45rem;
+        font-size: 0.75rem;
+        font-weight: 700;
+        position: absolute;
+        top: 2px;
+        right: -8px;
+    }
+
+    /* Crisis table & layout styling */
+    .alerts-table-container {
+        overflow-x: auto;
+        width: 100%;
+        background: var(--card-bg);
+        border: 1px solid var(--card-border);
+        border-radius: var(--radius);
+        padding: 1.5rem;
+        box-shadow: var(--shadow);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+    }
+
+    .alerts-table {
+        width: 100%;
+        border-collapse: collapse;
+        text-align: left;
+    }
+
+    .alerts-table th, .alerts-table td {
+        padding: 1rem;
+        border-bottom: 1px solid var(--card-border);
+        font-size: 0.9rem;
+    }
+
+    .alerts-table th {
+        font-family: 'Outfit', sans-serif;
+        color: var(--text-secondary);
+        font-weight: 600;
+        text-transform: uppercase;
+        font-size: 0.8rem;
+        letter-spacing: 0.05em;
+    }
+
+    .alerts-table tr:hover {
+        background: rgba(255, 255, 255, 0.01);
+    }
+
+    .snippet-box {
+        background: rgba(0, 0, 0, 0.25);
+        border-left: 3px solid var(--error);
+        padding: 0.5rem 0.75rem;
+        border-radius: 4px;
+        font-family: monospace;
+        font-size: 0.85rem;
+        color: var(--text-primary);
+        max-width: 400px;
+        white-space: pre-wrap;
+    }
+
+    /* Chatbot in tab styling */
+    .chat-container-therapist {
+        max-width: 600px;
+        margin: 0 auto;
+    }
+    
+    .chat-box {
+        border: 1px solid var(--card-border);
+        border-radius: 12px;
+        height: 350px;
+        overflow-y: auto;
+        padding: 1rem;
+        background: rgba(0, 0, 0, 0.2);
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+
+    .chat-message {
+        max-width: 80%;
+        padding: 0.75rem 1rem;
+        border-radius: 12px;
+        font-size: 0.9rem;
+        line-height: 1.4;
+    }
+
+    .message-user {
+        background: rgba(34, 211, 238, 0.15);
+        color: var(--accent);
+        align-self: flex-end;
+        border-bottom-right-radius: 2px;
+    }
+
+    .message-ai {
+        background: rgba(255, 255, 255, 0.05);
+        color: var(--text-primary);
+        align-self: flex-start;
+        border-bottom-left-radius: 2px;
+    }
+
+    .chat-input-row {
+        display: flex;
+        gap: 0.5rem;
+        margin-top: 0.75rem;
+    }
+
+    .chat-input-row input {
+        flex: 1;
+    }
+
+    .btn-send {
+        background: var(--accent);
+        border: none;
+        color: #0a0518;
+        padding: 0 1.25rem;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: var(--transition);
+    }
+
+    .btn-send:hover {
+        background: white;
+        box-shadow: 0 0 10px rgba(34, 211, 238, 0.4);
+    }
 </style>
 {% endblock %}
 
 {% block content %}
 <h1 class="page-title" style="text-align: left; width: 100%; max-width: 1200px;">Therapist Workspace</h1>
 <p class="page-subtitle" style="text-align: left; width: 100%; max-width: 1200px; margin-top: -1.25rem; margin-bottom: 1.5rem;">
-    Review upcoming patient requests and log diagnostic session summary notes powered by Claude AI insights.
+    Review upcoming patient requests, track crisis alerts, and consult with the Aura AI helper.
 </p>
 
-<div class="dashboard-grid">
-    <!-- Left Column: Appointments List -->
-    <div class="widget">
-        <h2 class="widget-title">Assigned Sessions</h2>
-        <ul class="session-list" id="session-list">
-            <li class="loading-spinner">Loading appointments...</li>
-        </ul>
-    </div>
+<!-- Tabs Navigation -->
+<div class="tabs-container">
+    <button id="tab-btn-workspace" class="tab-btn active" onclick="switchTab('workspace')">Clinical Workspace</button>
+    <button id="tab-btn-crisis" class="tab-btn" onclick="switchTab('crisis')">
+        Crisis Alerts
+        <span id="crisis-badge" class="badge-tab" style="display: none;">0</span>
+    </button>
+    <button id="tab-btn-chat" class="tab-btn" onclick="switchTab('chat')">Aura Support Chat</button>
+</div>
 
-    <!-- Right Column: Clinical Notes Workspace -->
-    <div class="widget" id="notes-workspace">
-        <h2 class="widget-title">Clinical Notes Workspace</h2>
-        <div id="no-selection-msg" style="text-align: center; color: var(--text-muted); padding: 4rem 1rem;">
-            <p style="font-size: 1.1rem; margin-bottom: 0.5rem;">No Appointment Selected</p>
-            <p style="font-size: 0.9rem;">Select an appointment from the left sidebar to start compiling session records and summaries.</p>
+<!-- Tab Content: Clinical Workspace -->
+<div id="tab-content-workspace" class="tab-content active">
+    <div class="dashboard-grid">
+        <!-- Left Column: Appointments List -->
+        <div class="widget">
+            <h2 class="widget-title">Assigned Sessions</h2>
+            <ul class="session-list" id="session-list">
+                <li class="loading-spinner">Loading appointments...</li>
+            </ul>
         </div>
-        
-        <div id="workspace-content" style="display: none; flex-direction: column; gap: 1.25rem;">
-            <div style="background: rgba(255, 255, 255, 0.02); border: 1px solid var(--card-border); border-radius: 8px; padding: 1rem;">
-                <h3 id="patient-title" style="font-family:'Outfit'; font-size:1.25rem; font-weight:700;">Patient: John Doe</h3>
-                <p id="patient-details" style="color:var(--text-secondary); font-size:0.85rem; margin-top:0.25rem;">Session: YYYY-MM-DD at HH:MM</p>
-                <p id="patient-reason" style="font-size:0.9rem; margin-top:0.5rem; border-top:1px dashed var(--card-border); padding-top:0.5rem;"></p>
-            </div>
 
-            <div class="form-group">
-                <label for="private-note">Private Clinical Note</label>
-                <textarea id="private-note" rows="5" placeholder="Record raw diagnostic notes and session logs here. These are private to you."></textarea>
+        <!-- Right Column: Clinical Notes Workspace -->
+        <div class="widget" id="notes-workspace">
+            <h2 class="widget-title">Clinical Notes Workspace</h2>
+            <div id="no-selection-msg" style="text-align: center; color: var(--text-muted); padding: 4rem 1rem;">
+                <p style="font-size: 1.1rem; margin-bottom: 0.5rem;">No Appointment Selected</p>
+                <p style="font-size: 0.9rem;">Select an appointment from the left sidebar to start compiling session records and summaries.</p>
             </div>
+            
+            <div id="workspace-content" style="display: none; flex-direction: column; gap: 1.25rem;">
+                <div style="background: rgba(255, 255, 255, 0.02); border: 1px solid var(--card-border); border-radius: 8px; padding: 1rem;">
+                    <h3 id="patient-title" style="font-family:'Outfit'; font-size:1.25rem; font-weight:700;">Patient: John Doe</h3>
+                    <p id="patient-details" style="color:var(--text-secondary); font-size:0.85rem; margin-top:0.25rem;">Session: YYYY-MM-DD at HH:MM</p>
+                    <p id="patient-reason" style="font-size:0.9rem; margin-top:0.5rem; border-top:1px dashed var(--card-border); padding-top:0.5rem;"></p>
+                </div>
 
-            <div style="display: flex; justify-content: flex-start; gap: 1rem; align-items: center;">
-                <button class="btn-action" onclick="generateAISummary()">Generate AI Summary</button>
-                <span id="ai-status" style="font-size: 0.8rem; color: var(--text-muted);"></span>
-            </div>
+                <div class="form-group">
+                    <label for="private-note">Private Clinical Note</label>
+                    <textarea id="private-note" rows="5" placeholder="Record raw diagnostic notes and session logs here. These are private to you."></textarea>
+                </div>
 
-            <div class="form-group">
-                <label for="shared-summary">Shared Patient Summary</label>
-                <textarea id="shared-summary" rows="3" placeholder="Provide general feedback and advice that the patient can review in their dashboard."></textarea>
-            </div>
+                <div style="display: flex; justify-content: flex-start; gap: 1rem; align-items: center;">
+                    <button class="btn-action" onclick="generateAISummary()">Generate AI Summary</button>
+                    <span id="ai-status" style="font-size: 0.8rem; color: var(--text-muted);"></span>
+                </div>
 
-            <div class="form-group">
-                <label for="ai-summary">AI Summary Log (Generated)</label>
-                <textarea id="ai-summary" rows="3" placeholder="Click 'Generate AI Summary' to populate clinical observations from your private note using Claude AI."></textarea>
-            </div>
+                <div class="form-group">
+                    <label for="shared-summary">Shared Patient Summary</label>
+                    <textarea id="shared-summary" rows="3" placeholder="Provide general feedback and advice that the patient can review in their dashboard."></textarea>
+                </div>
 
-            <div style="display: flex; gap: 0.5rem; margin-top: 0.5rem;">
-                <button class="btn-submit" onclick="saveSessionNotes()" style="flex:1; margin:0; padding:0.85rem;">Save Session Records</button>
-                <button class="btn-outline" onclick="closeWorkspace()">Cancel</button>
+                <div class="form-group">
+                    <label for="ai-summary">AI Summary Log (Generated)</label>
+                    <textarea id="ai-summary" rows="3" placeholder="Click 'Generate AI Summary' to populate clinical observations from your private note using Claude AI."></textarea>
+                </div>
+
+                <div style="display: flex; gap: 0.5rem; margin-top: 0.5rem;">
+                    <button class="btn-submit" onclick="saveSessionNotes()" style="flex:1; margin:0; padding:0.85rem;">Save Session Records</button>
+                    <button class="btn-outline" onclick="closeWorkspace()">Cancel</button>
+                </div>
             </div>
+        </div>
+    </div>
+</div>
+
+<!-- Tab Content: Crisis Alerts -->
+<div id="tab-content-crisis" class="tab-content">
+    <div class="alerts-table-container">
+        <h2 class="widget-title" style="margin-bottom: 1rem; border: none; padding: 0;">Crisis Detection Log</h2>
+        <table class="alerts-table">
+            <thead>
+                <tr>
+                    <th>Patient</th>
+                    <th>Detected Keyword</th>
+                    <th>Snippet Preview</th>
+                    <th>Logged At</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody id="crisis-logs-table-body">
+                <tr>
+                    <td colspan="6" class="loading-spinner">Loading crisis logs...</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Tab Content: Aura Support Chat -->
+<div id="tab-content-chat" class="tab-content">
+    <div class="widget chat-container-therapist">
+        <h2 class="widget-title">Aura Support Chat <span>AI Triage Helper</span></h2>
+        <div class="chat-box" id="chat-box">
+            <div class="chat-message message-ai">
+                Hello! I am Aura, your AI companion. You can chat with me here to test my triage capabilities or ask clinical-support general questions.
+            </div>
+        </div>
+        <div class="chat-input-row">
+            <input type="text" id="chat-input" placeholder="Type a message to Aura..." onkeydown="if(event.key === 'Enter') sendChatMessage()">
+            <button class="btn-send" onclick="sendChatMessage()">Send</button>
         </div>
     </div>
 </div>
@@ -189,11 +412,33 @@
 <script>
     const csrfToken = '{{ csrf_token }}';
     let currentAppointmentId = null;
+    let chatHistory = [];
 
     // Load on start
     window.addEventListener('DOMContentLoaded', () => {
         loadAppointments();
+        loadCrisisLogs();
+        // Periodically check for new crisis alerts
+        setInterval(loadCrisisLogs, 15000);
     });
+
+    // Tab Navigation Logic
+    function switchTab(tabName) {
+        document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+
+        if (tabName === 'workspace') {
+            document.getElementById('tab-btn-workspace').classList.add('active');
+            document.getElementById('tab-content-workspace').classList.add('active');
+        } else if (tabName === 'crisis') {
+            document.getElementById('tab-btn-crisis').classList.add('active');
+            document.getElementById('tab-content-crisis').classList.add('active');
+            loadCrisisLogs();
+        } else if (tabName === 'chat') {
+            document.getElementById('tab-btn-chat').classList.add('active');
+            document.getElementById('tab-content-chat').classList.add('active');
+        }
+    }
 
     // Fetch Appointments list
     function loadAppointments() {
@@ -352,6 +597,137 @@
         document.querySelectorAll('.session-card').forEach(card => card.classList.remove('active'));
         document.getElementById('no-selection-msg').style.display = 'block';
         document.getElementById('workspace-content').style.display = 'none';
+    }
+
+    // Load Crisis Detection Logs
+    function loadCrisisLogs() {
+        fetch('/api/crisis-logs/')
+        .then(res => res.json())
+        .then(data => {
+            const tbody = document.getElementById('crisis-logs-table-body');
+            if (!tbody) return;
+
+            tbody.innerHTML = '';
+            const logs = data.crisis_logs || [];
+
+            // Calculate unreviewed count for badge
+            const unreviewedCount = logs.filter(l => !l.reviewed).length;
+            const badge = document.getElementById('crisis-badge');
+            if (unreviewedCount > 0) {
+                badge.innerText = unreviewedCount;
+                badge.style.display = 'inline-block';
+            } else {
+                badge.style.display = 'none';
+            }
+
+            if (logs.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: var(--text-muted); padding: 2rem;">No crisis alerts logged. Systems normal.</td></tr>';
+                return;
+            }
+
+            logs.forEach(log => {
+                const tr = document.createElement('tr');
+                const date = new Date(log.timestamp).toLocaleString();
+                
+                const statusBadge = log.reviewed 
+                    ? '<span class="badge badge-success">REVIEWED</span>' 
+                    : '<span class="badge badge-danger">PENDING</span>';
+
+                const actionButton = log.reviewed 
+                    ? '<span style="color: var(--success); font-size: 1.25rem; font-weight: bold;">✓</span>' 
+                    : `<button class="btn-action" style="padding: 0.25rem 0.5rem; font-size: 0.75rem;" onclick="reviewCrisisLog(${log.id})">Mark Reviewed</button>`;
+
+                tr.innerHTML = `
+                    <td style="font-weight: 600;">${log.username}</td>
+                    <td><span class="badge badge-danger" style="background: rgba(239, 68, 68, 0.2); color: #f87171;">${log.detected_keyword}</span></td>
+                    <td><div class="snippet-box">${escapeHtml(log.text_snippet)}</div></td>
+                    <td style="color: var(--text-secondary); font-size: 0.8rem;">${date}</td>
+                    <td>${statusBadge}</td>
+                    <td>${actionButton}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        })
+        .catch(err => console.error(err));
+    }
+
+    function reviewCrisisLog(logId) {
+        fetch('/api/crisis-logs/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrfToken
+            },
+            body: JSON.stringify({ log_id: logId })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                loadCrisisLogs();
+            } else {
+                alert('Error reviewing log: ' + (data.error || 'Unknown error'));
+            }
+        })
+        .catch(err => console.error(err));
+    }
+
+    function escapeHtml(text) {
+        if (!text) return '';
+        return text
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
+    }
+
+    // Send AI Chat Message
+    function sendChatMessage() {
+        const input = document.getElementById('chat-input');
+        const message = input.value.trim();
+        if (!message) return;
+
+        // Add user bubble
+        appendChatBubble(message, 'user');
+        input.value = '';
+
+        // Call API
+        fetch('/api/chat/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrfToken
+            },
+            body: JSON.stringify({
+                message: message,
+                history: chatHistory
+            })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.response) {
+                appendChatBubble(data.response, 'ai');
+                // Store in local chat history
+                chatHistory.push(message);
+                chatHistory.push(data.response);
+            } else {
+                appendChatBubble('Sorry, I encountered an error checking your request.', 'ai');
+            }
+        })
+        .catch(err => {
+            console.error(err);
+            appendChatBubble('Unable to connect to the AI service. Please try again.', 'ai');
+        });
+    }
+
+    function appendChatBubble(text, sender) {
+        const box = document.getElementById('chat-box');
+        const div = document.createElement('div');
+        div.className = `chat-message message-${sender}`;
+        div.innerText = text;
+        box.appendChild(div);
+        // Scroll to bottom
+        box.scrollTop = box.scrollHeight;
     }
 </script>
 {% endblock %}

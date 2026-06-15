@@ -50,7 +50,8 @@ def analyze_sentiment(text):
         )
 
         if response.content:
-            raw_text = response.content[0].text.strip()
+            first_block = response.content[0]
+            raw_text = getattr(first_block, 'text', '').strip()
             
             # Clean markdown formatting if present
             if raw_text.startswith("```"):

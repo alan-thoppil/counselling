@@ -59,7 +59,8 @@ def match_therapist(answers):
         )
 
         if response.content:
-            raw_text = response.content[0].text.strip()
+            first_block = response.content[0]
+            raw_text = getattr(first_block, 'text', '').strip()
             # Clean markdown JSON block formatting if present
             raw_text = raw_text.replace("```json", "").replace("```", "").strip()
 

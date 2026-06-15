@@ -3,6 +3,7 @@ from django.http import JsonResponse
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_POST
 
+from .models import CrisisLog
 from .chatbot import get_chatbot_response
 from .sentiment import analyze_sentiment
 from .crisis import check_crisis
@@ -100,3 +101,41 @@ def summarise_view(request):
 
     except json.JSONDecodeError:
         return JsonResponse({'error': 'Invalid JSON body.'}, status=400)
+
+
+# GET/POST /api/crisis-logs/ -> View and review crisis detection alerts
+@login_required
+def crisis_logs_view(request):
+    # Restrict to therapists and admins
+    if not (request.user.is_superuser or getattr(request.user, 'role', '') == 'therapist'):
+        return JsonResponse({'error': 'Unauthorized'}, status=403)
+
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            log_id = data.get('log_id')
+            if not log_id:
+                return JsonResponse({'error': 'Log ID is required.'}, status=400)
+            
+            try:
+                log = CrisisLog.objects.get(id=log_id)
+                log.reviewed = True
+                log.save()
+                return JsonResponse({'success': True})
+            except CrisisLog.DoesNotExist:
+                return JsonResponse({'error': 'Crisis log not found.'}, status=404)
+        except json.JSONDecodeError:
+            return JsonResponse({'error': 'Invalid JSON body.'}, status=400)
+
+    # GET request: list all crisis logs
+    logs = CrisisLog.objects.all().select_related('user')
+    data = [{
+        'id': l.id,
+        'username': l.user.username if l.user else 'Anonymous',
+        'text_snippet': l.text_snippet,
+        'detected_keyword': l.detected_keyword,
+        'timestamp': l.timestamp.isoformat(),
+        'reviewed': l.reviewed
+    } for l in logs]
+
+    return JsonResponse({'crisis_logs': data})
