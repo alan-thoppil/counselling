@@ -163,7 +163,7 @@
     .hero-benefits {
         display: flex;
         flex-direction: column;
-        gap: 1.25rem;
+        gap: 0.85rem; /* Gap between the divided cards */
         border-top: 1px solid rgba(124, 58, 237, 0.1);
         padding-top: 2rem;
     }
@@ -171,36 +171,49 @@
     .benefit-item {
         display: flex;
         align-items: center;
-        gap: 1rem;
+        gap: 1.25rem;
+        background: rgba(255, 255, 255, 0.55);
+        border: 1px solid rgba(124, 58, 237, 0.08);
+        border-radius: 14px;
+        padding: 0.9rem 1.25rem;
+        box-shadow: 0 4px 12px rgba(124, 58, 237, 0.02);
+        transition: transform 0.2s ease, background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .benefit-item:hover {
+        transform: translateY(-2px);
+        background: rgba(255, 255, 255, 0.9);
+        border-color: rgba(124, 58, 237, 0.2);
+        box-shadow: 0 8px 20px rgba(124, 58, 237, 0.06);
     }
 
     .benefit-icon {
-        width: 36px;
-        height: 36px;
-        background: rgba(124, 58, 237, 0.07);
-        border: 1px solid rgba(124, 58, 237, 0.15);
+        width: 44px;
+        height: 44px;
+        background: rgba(124, 58, 237, 0.08);
+        border: 1px solid rgba(124, 58, 237, 0.18);
         border-radius: 50%;
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 1.1rem;
+        font-size: 1.35rem; /* Slightly larger icon */
         flex-shrink: 0;
     }
 
     .benefit-text {
         display: flex;
         flex-direction: column;
-        gap: 0.1rem;
+        gap: 0.15rem;
     }
 
     .benefit-label {
         font-weight: 700;
-        font-size: 0.9rem;
+        font-size: 1rem; /* Slightly larger text */
         color: #120b29;
     }
 
     .benefit-sub {
-        font-size: 0.8rem;
+        font-size: 0.85rem; /* Slightly larger text */
         color: #6c698f;
     }
 
