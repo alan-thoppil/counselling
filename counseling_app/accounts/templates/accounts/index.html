@@ -4,112 +4,306 @@
 
 {% block extra_head %}
 <style>
-    /* Hero Section Styles */
-    .hero-container {
+    /* Light theme override for landing page */
+    body {
+        background: linear-gradient(135deg, #f7f5ff 0%, #f0ecfc 100%) !important;
+        color: #2e2a52 !important;
+    }
+    
+    body::before {
+        background: #7c3aed !important;
+        opacity: 0.12 !important;
+    }
+    body::after {
+        background: #22d3ee !important;
+        opacity: 0.12 !important;
+    }
+    
+    header {
+        background: rgba(247, 245, 255, 0.8) !important;
+        border-bottom: 1px solid rgba(124, 58, 237, 0.1) !important;
+    }
+    
+    .logo {
+        background: linear-gradient(to right, #120b29, #7c3aed) !important;
+        -webkit-background-clip: text !important;
+        background-clip: text !important;
+        -webkit-text-fill-color: transparent !important;
+    }
+    
+    .nav-link {
+        color: #555175 !important;
+    }
+    
+    .nav-link:hover {
+        color: #7c3aed !important;
+    }
+    
+    .nav-btn {
+        background: rgba(124, 58, 237, 0.05) !important;
+        border: 1px solid rgba(124, 58, 237, 0.15) !important;
+        color: #7c3aed !important;
+    }
+    
+    .nav-btn:hover {
+        background: #7c3aed !important;
+        color: white !important;
+        border-color: #7c3aed !important;
+    }
+
+    /* Hero Section 2-Column Layout */
+    .hero-section {
+        display: grid;
+        grid-template-columns: 1.2fr 1fr;
+        gap: 3rem;
+        width: 100%;
+        max-width: 1200px;
+        margin: 0 auto;
+        align-items: center;
+        padding: 3rem 0;
+        overflow: visible;
+    }
+
+    /* Column 1: Text & Actions */
+    .hero-text-col {
         display: flex;
         flex-direction: column;
-        align-items: center;
-        text-align: center;
-        padding: 5rem 1rem 3rem 1rem;
-        max-width: 900px;
-        margin: 0 auto;
-        position: relative;
+        text-align: left;
     }
 
     .hero-badge {
-        background: rgba(124, 58, 237, 0.15);
-        border: 1px solid rgba(124, 58, 237, 0.3);
-        color: #c084fc;
-        padding: 0.5rem 1.25rem;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        background: #ffffff;
+        border: 1px solid rgba(124, 58, 237, 0.2);
+        color: #7c3aed;
+        padding: 0.5rem 1rem;
         border-radius: 9999px;
         font-size: 0.85rem;
         font-weight: 600;
-        margin-bottom: 2rem;
-        letter-spacing: 0.05em;
-        text-transform: uppercase;
-        animation: fadeInDown 0.6s ease-out;
+        margin-bottom: 1.5rem;
+        width: fit-content;
+        box-shadow: 0 4px 10px rgba(124, 58, 237, 0.05);
+    }
+
+    .badge-heart {
+        font-size: 0.95rem;
     }
 
     .hero-title {
         font-family: 'Outfit', sans-serif;
-        font-size: 4rem;
+        font-size: 3.5rem;
         font-weight: 800;
         line-height: 1.15;
         letter-spacing: -0.03em;
         margin-bottom: 1.5rem;
-        background: linear-gradient(135deg, #ffffff 0%, #a78bfa 50%, #22d3ee 100%);
-        -webkit-background-clip: text;
-        background-clip: text;
-        -webkit-text-fill-color: transparent;
-        animation: fadeInUp 0.8s ease-out;
+        color: #120b29 !important;
+        background: none !important;
+        -webkit-background-clip: initial !important;
+        background-clip: initial !important;
+        -webkit-text-fill-color: initial !important;
     }
 
     .hero-subtitle {
-        font-size: 1.25rem;
-        color: var(--text-secondary);
-        max-width: 700px;
-        margin-bottom: 3rem;
-        line-height: 1.6;
-        animation: fadeInUp 1s ease-out;
+        font-size: 1.1rem;
+        color: #4b4869 !important;
+        max-width: 100%;
+        margin-bottom: 2.5rem;
+        line-height: 1.65;
     }
 
     .hero-ctas {
         display: flex;
-        gap: 1.25rem;
-        justify-content: center;
-        flex-wrap: wrap;
-        animation: fadeInUp 1.2s ease-out;
+        gap: 1rem;
+        margin-bottom: 3rem;
     }
 
     .btn-hero-primary {
-        background: var(--primary);
-        color: white;
+        background: #5830d1 !important;
+        color: white !important;
         text-decoration: none;
-        padding: 1rem 2.25rem;
+        padding: 0.9rem 2rem;
         border-radius: 9999px;
         font-weight: 600;
-        font-size: 1.05rem;
+        font-size: 1rem;
         transition: var(--transition);
-        box-shadow: 0 4px 20px rgba(124, 58, 237, 0.3);
+        box-shadow: 0 6px 20px rgba(88, 48, 209, 0.25);
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
     }
 
     .btn-hero-primary:hover {
-        background: var(--primary-hover);
+        background: #4622b3 !important;
         transform: translateY(-2px);
-        box-shadow: 0 8px 30px rgba(124, 58, 237, 0.5);
+        box-shadow: 0 10px 25px rgba(88, 48, 209, 0.35);
     }
 
     .btn-hero-secondary {
-        background: rgba(255, 255, 255, 0.05);
-        color: white;
+        background: #ffffff !important;
+        color: #120b29 !important;
         text-decoration: none;
-        padding: 1rem 2.25rem;
+        padding: 0.9rem 2rem;
         border-radius: 9999px;
         font-weight: 600;
-        font-size: 1.05rem;
-        border: 1px solid var(--card-border);
+        font-size: 1rem;
+        border: 1px solid rgba(124, 58, 237, 0.2);
         transition: var(--transition);
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.03);
     }
 
     .btn-hero-secondary:hover {
-        background: rgba(255, 255, 255, 0.1);
-        border-color: rgba(255, 255, 255, 0.2);
+        background: #fcfbff !important;
+        border-color: rgba(124, 58, 237, 0.4);
         transform: translateY(-2px);
     }
 
-    /* Features Section Styles */
+    /* Hero Benefits underneath */
+    .hero-benefits {
+        display: flex;
+        flex-direction: column;
+        gap: 1.25rem;
+        border-top: 1px solid rgba(124, 58, 237, 0.1);
+        padding-top: 2rem;
+    }
+
+    .benefit-item {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .benefit-icon {
+        width: 36px;
+        height: 36px;
+        background: rgba(124, 58, 237, 0.07);
+        border: 1px solid rgba(124, 58, 237, 0.15);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.1rem;
+        flex-shrink: 0;
+    }
+
+    .benefit-text {
+        display: flex;
+        flex-direction: column;
+        gap: 0.1rem;
+    }
+
+    .benefit-label {
+        font-weight: 700;
+        font-size: 0.9rem;
+        color: #120b29;
+    }
+
+    .benefit-sub {
+        font-size: 0.8rem;
+        color: #6c698f;
+    }
+
+    /* Column 2: Visuals (Image + Blob + Floating Cards) */
+    .hero-visuals-col {
+        position: relative;
+        height: 600px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        overflow: visible;
+    }
+
+    .blob-bg {
+        position: absolute;
+        width: 380px;
+        height: 380px;
+        background: #ebdfff;
+        border-radius: 64% 36% 70% 30% / 50% 60% 40% 50%;
+        z-index: 0;
+        filter: blur(8px);
+        opacity: 0.95;
+        right: -8%;
+        left: auto;
+        top: 15%;
+        animation: blobFloat 8s ease-in-out infinite alternate;
+    }
+
+    @keyframes blobFloat {
+        0% { transform: translate(0, 0) scale(1) rotate(0deg); border-radius: 64% 36% 70% 30% / 50% 60% 40% 50%; }
+        100% { transform: translate(10px, 15px) scale(1.05) rotate(15deg); border-radius: 40% 60% 30% 70% / 60% 40% 60% 40%; }
+    }
+
+    .hero-main-img {
+        position: absolute;
+        right: -8%;
+        left: auto;
+        bottom: -5%;
+        height: 95%;
+        width: auto;
+        z-index: 1;
+        object-fit: contain;
+        mix-blend-mode: multiply;
+        filter: contrast(1.02) saturate(1.05);
+        transform: scale(1.0);
+        transform-origin: bottom center;
+    }
+
+    /* Responsiveness */
+    @media (max-width: 1100px) {
+        .hero-section {
+            grid-template-columns: 1fr;
+            gap: 4rem;
+        }
+        .hero-visuals-col {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .hero-section {
+            grid-template-columns: 1fr;
+            gap: 3rem;
+        }
+        .hero-visuals-col {
+            height: auto;
+            flex-direction: column;
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+        .blob-bg {
+            display: none;
+        }
+        .hero-main-img {
+            position: static;
+            height: auto;
+            max-height: 380px;
+            width: 100%;
+            max-width: 320px;
+            transform: none;
+            margin-bottom: 1rem;
+        }
+        .hero-title {
+            font-size: 2.75rem !important;
+        }
+    }
+
+    /* Bottom Features grid styling */
     .section-title {
+        color: #120b29 !important;
+        margin-top: 6rem;
+        margin-bottom: 1rem;
         font-family: 'Outfit', sans-serif;
         font-size: 2.5rem;
         font-weight: 700;
         text-align: center;
-        margin-top: 6rem;
-        margin-bottom: 1rem;
         letter-spacing: -0.02em;
     }
 
     .section-subtitle {
-        color: var(--text-secondary);
+        color: #6c698f !important;
         text-align: center;
         max-width: 600px;
         margin: 0 auto 4rem auto;
@@ -127,22 +321,21 @@
     }
 
     .feature-card {
-        background: var(--card-bg);
-        border: 1px solid var(--card-border);
+        background: #ffffff !important;
+        border: 1px solid rgba(124, 58, 237, 0.1) !important;
         border-radius: var(--radius);
         padding: 2.5rem 2rem;
         transition: var(--transition);
-        backdrop-filter: blur(12px);
-        -webkit-backdrop-filter: blur(12px);
         display: flex;
         flex-direction: column;
         gap: 1.25rem;
+        box-shadow: 0 8px 25px rgba(124, 58, 237, 0.04) !important;
     }
 
     .feature-card:hover {
         transform: translateY(-5px);
-        border-color: rgba(34, 211, 238, 0.3);
-        box-shadow: 0 10px 30px rgba(34, 211, 238, 0.08);
+        border-color: rgba(124, 58, 237, 0.3) !important;
+        box-shadow: 0 15px 35px rgba(124, 58, 237, 0.08) !important;
     }
 
     .feature-icon {
@@ -180,31 +373,30 @@
         font-family: 'Outfit', sans-serif;
         font-size: 1.35rem;
         font-weight: 600;
-        color: white;
+        color: #120b29 !important;
     }
 
     .feature-desc {
-        color: var(--text-secondary);
+        color: #6c698f !important;
         font-size: 0.95rem;
         line-height: 1.6;
     }
 
-    /* Stats Grid */
+    /* Stats Grid styling override */
     .stats-card {
-        background: var(--card-bg);
-        border: 1px solid var(--card-border);
+        background: #ffffff !important;
+        border: 1px solid rgba(124, 58, 237, 0.1) !important;
         border-radius: var(--radius);
         padding: 3rem;
         width: 100%;
         max-width: 1100px;
         margin: 6rem auto 3rem auto;
-        backdrop-filter: blur(16px);
-        -webkit-backdrop-filter: blur(16px);
         display: flex;
         justify-content: space-around;
         align-items: center;
         flex-wrap: wrap;
         gap: 3rem;
+        box-shadow: 0 10px 30px rgba(124, 58, 237, 0.04) !important;
     }
 
     .stat-item {
@@ -228,9 +420,15 @@
     .stat-label {
         font-size: 0.9rem;
         font-weight: 600;
-        color: var(--text-secondary);
+        color: #6c698f !important;
         text-transform: uppercase;
         letter-spacing: 0.1em;
+    }
+
+    footer {
+        background: #f7f5ff !important;
+        border-top: 1px solid rgba(124, 58, 237, 0.1) !important;
+        color: #6c698f !important;
     }
 
     /* Animations */
@@ -245,19 +443,13 @@
     }
 
     @media (max-width: 768px) {
-        .hero-title {
-            font-size: 2.75rem;
-        }
-        .hero-subtitle {
-            font-size: 1.1rem;
-        }
         .stats-card {
             flex-direction: column;
             gap: 2.5rem;
             padding: 2.5rem 1.5rem;
         }
         .stat-item {
-            border-bottom: 1px solid var(--card-border);
+            border-bottom: 1px solid rgba(124, 58, 237, 0.1);
             padding-bottom: 1.5rem;
             width: 100%;
         }
@@ -266,18 +458,261 @@
             padding-bottom: 0;
         }
     }
+
+    /* Offerings Section Styling */
+    .offerings-section {
+        padding: 5rem 0 3rem 0;
+        width: 100%;
+        max-width: 1100px;
+        margin: 0 auto;
+    }
+
+    .offerings-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+        gap: 2.5rem;
+        margin-top: 3rem;
+    }
+
+    .offering-card {
+        background: #ffffff !important;
+        border: 1px solid rgba(124, 58, 237, 0.1) !important;
+        border-radius: var(--radius);
+        overflow: hidden;
+        transition: var(--transition);
+        display: flex;
+        flex-direction: column;
+        box-shadow: 0 10px 30px rgba(124, 58, 237, 0.03) !important;
+    }
+
+    .offering-card:hover {
+        transform: translateY(-6px);
+        border-color: rgba(124, 58, 237, 0.25) !important;
+        box-shadow: 0 15px 35px rgba(124, 58, 237, 0.08) !important;
+    }
+
+    .offering-img-wrapper {
+        position: relative;
+        width: 100%;
+        height: 220px;
+        overflow: hidden;
+        background: #fcfbff;
+    }
+
+    .offering-img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.5s ease;
+    }
+
+    .offering-card:hover .offering-img {
+        transform: scale(1.05);
+    }
+
+    .offering-badge {
+        position: absolute;
+        top: 1rem;
+        left: 1rem;
+        background: rgba(255, 255, 255, 0.95);
+        color: #7c3aed;
+        padding: 0.35rem 0.85rem;
+        border-radius: 9999px;
+        font-size: 0.75rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+    }
+
+    .offering-content {
+        padding: 2rem;
+        display: flex;
+        flex-direction: column;
+        flex-grow: 1;
+        gap: 0.85rem;
+        text-align: left;
+    }
+
+    .offering-title {
+        font-family: 'Outfit', sans-serif;
+        font-size: 1.4rem;
+        font-weight: 700;
+        color: #120b29 !important;
+    }
+
+    .offering-desc {
+        color: #6c698f !important;
+        font-size: 0.95rem;
+        line-height: 1.6;
+        flex-grow: 1;
+    }
+
+    .offering-link {
+        color: #7c3aed !important;
+        text-decoration: none;
+        font-weight: 700;
+        font-size: 0.9rem;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.25rem;
+        margin-top: 0.5rem;
+        transition: var(--transition);
+        width: fit-content;
+    }
+
+    .offering-link:hover {
+        color: #5830d1 !important;
+        gap: 0.5rem;
+    }
+
+    @media (max-width: 900px) {
+        .offerings-grid {
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 2rem;
+        }
+    }
+
+    @media (max-width: 600px) {
+        .offerings-grid {
+            grid-template-columns: 1fr;
+            gap: 2rem;
+        }
+    }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="hero-container">
-    <div class="hero-badge">AI-Powered Compassionate Counseling</div>
-    <h1 class="hero-title">Your Path to Mental Clarity & Peace</h1>
-    <p class="hero-subtitle">Experience a new era of emotional well-being. MindWell integrates advanced AI support tools with personalized therapist care to empower your mental health journey.</p>
+<div class="hero-section">
+    <!-- Column 1: Text Column -->
+    <div class="hero-text-col">
+        <div class="hero-badge">
+            <span class="badge-heart">💜</span> Your well-being is our priority
+        </div>
+        <h1 class="hero-title">Your Path to Mental Clarity & Peace</h1>
+        <p class="hero-subtitle">Experience a new era of emotional well-being. MindWell integrates advanced AI support tools with personalized therapist care to empower your mental health journey.</p>
+        
+        <div class="hero-ctas">
+            <a href="{% url 'register_choice' %}" class="btn-hero-primary">Start Your Journey &rarr;</a>
+            <a href="{% url 'login' %}" class="btn-hero-secondary">Log In to Dashboard</a>
+        </div>
+        
+        <!-- Benefit Badges at the bottom left -->
+        <div class="hero-benefits">
+            <div class="benefit-item">
+                <div class="benefit-icon">🛡️</div>
+                <div class="benefit-text">
+                    <span class="benefit-label">Private & Secure</span>
+                    <span class="benefit-sub">Your privacy is 100% protected</span>
+                </div>
+            </div>
+            <div class="benefit-item">
+                <div class="benefit-icon">👥</div>
+                <div class="benefit-text">
+                    <span class="benefit-label">Licensed Therapists</span>
+                    <span class="benefit-sub">Connect with verified mental health experts</span>
+                </div>
+            </div>
+            <div class="benefit-item">
+                <div class="benefit-icon">📅</div>
+                <div class="benefit-text">
+                    <span class="benefit-label">Flexible Scheduling</span>
+                    <span class="benefit-sub">Book sessions that fit your life</span>
+                </div>
+            </div>
+        </div>
+    </div>
     
-    <div class="hero-ctas">
-        <a href="{% url 'register_patient' %}" class="btn-hero-primary">Start Your Journey</a>
-        <a href="{% url 'login' %}" class="btn-hero-secondary">Log In to Dashboard</a>
+    <!-- Column 2: Visuals Column (Image + Cards Overlaid) -->
+    <div class="hero-visuals-col">
+        <!-- Cropped Woman Cutout Image -->
+        <img src="/media/hero_woman.png" alt="Serene woman" class="hero-main-img">
+    </div>
+</div>
+
+<!-- Holistic Care Offerings Section -->
+<div class="offerings-section">
+    <h2 class="section-title" style="margin-top: 2rem;">Holistic Path to Wellness</h2>
+    <p class="section-subtitle">Engage with clinically designed activities and support systems built to nurture your mental health.</p>
+    
+    <div class="offerings-grid">
+        <!-- Therapy Card -->
+        <div class="offering-card">
+            <div class="offering-img-wrapper">
+                <img src="/media/therapy_card.png" alt="Psychology Therapy Session" class="offering-img">
+                <span class="offering-badge">Counseling</span>
+            </div>
+            <div class="offering-content">
+                <h3 class="offering-title">1-on-1 Clinical Therapy</h3>
+                <p class="offering-desc">Consult privately with verified, licensed psychologists who specialize in Cognitive Behavioral Therapy (CBT), anxiety management, and relationship support.</p>
+                <a href="{% url 'register_choice' %}" class="offering-link">Find your therapist &rarr;</a>
+            </div>
+        </div>
+        
+        <!-- Exercises Card -->
+        <div class="offering-card">
+            <div class="offering-img-wrapper">
+                <img src="/media/exercises_card.png" alt="Mindfulness Exercises" class="offering-img">
+                <span class="offering-badge">Mindfulness</span>
+            </div>
+            <div class="offering-content">
+                <h3 class="offering-title">Relaxation &amp; Exercises</h3>
+                <p class="offering-desc">Explore guided breathing sessions, auditory mindfulness flows, and daily stress-reduction routines designed to ground your thoughts and ease body tension.</p>
+                <a href="{% url 'register_choice' %}" class="offering-link">Access exercises &rarr;</a>
+            </div>
+        </div>
+        
+        <!-- Journaling Card -->
+        <div class="offering-card">
+            <div class="offering-img-wrapper">
+                <img src="/media/journaling_card.png" alt="Guided Journaling &amp; Mood logging" class="offering-img">
+                <span class="offering-badge">Self-Reflection</span>
+            </div>
+            <div class="offering-content">
+                <h3 class="offering-title">Mood Journal &amp; Analytics</h3>
+                <p class="offering-desc">Log your daily emotional patterns with intelligent guided prompts. Automatically track trends over time with automated sentiment feedback insights.</p>
+                <a href="{% url 'register_choice' %}" class="offering-link">Start your journal &rarr;</a>
+            </div>
+        </div>
+
+        <!-- AI Support Card -->
+        <div class="offering-card">
+            <div class="offering-img-wrapper">
+                <img src="/media/ai_support_card.png" alt="AI Empathetic Support" class="offering-img">
+                <span class="offering-badge">AI Companion</span>
+            </div>
+            <div class="offering-content">
+                <h3 class="offering-title">AI Empathetic Support</h3>
+                <p class="offering-desc">Chat with Aura, our intelligent emotional support companion, available 24/7. Receive instant coping strategies, grounding techniques, and a safe space to express yourself.</p>
+                <a href="{% url 'register_choice' %}" class="offering-link">Meet Aura &rarr;</a>
+            </div>
+        </div>
+
+        <!-- Self-Assessment Card -->
+        <div class="offering-card">
+            <div class="offering-img-wrapper">
+                <img src="/media/assessment_card.png" alt="Self-Assessment Screening" class="offering-img">
+                <span class="offering-badge">Screening</span>
+            </div>
+            <div class="offering-content">
+                <h3 class="offering-title">Self-Assessments</h3>
+                <p class="offering-desc">Take clinically validated screening tools such as PHQ-9 (depression), GAD-7 (anxiety), and more. Instantly receive severity insights and personalised recommendations.</p>
+                <a href="{% url 'register_choice' %}" class="offering-link">Take a test &rarr;</a>
+            </div>
+        </div>
+
+        <!-- Peer Support Card -->
+        <div class="offering-card">
+            <div class="offering-img-wrapper">
+                <img src="/media/peer_support_card.png" alt="Peer Support Community" class="offering-img">
+                <span class="offering-badge">Community</span>
+            </div>
+            <div class="offering-content">
+                <h3 class="offering-title">Peer Support &amp; Groups</h3>
+                <p class="offering-desc">Connect with a warm and understanding community of peers who share your journey. Explore safe, moderated group spaces for mutual encouragement and healing.</p>
+                <a href="{% url 'register_choice' %}" class="offering-link">Join a group &rarr;</a>
+            </div>
+        </div>
     </div>
 </div>
 

@@ -35,6 +35,31 @@ class RegistrationViewsTestCase(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'accounts/register_patient.html')
 
+    def test_register_choice_anonymous(self):
+        """Test registration choice page renders successfully for unauthenticated users"""
+        url = reverse('register_choice')
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'accounts/register_choice.html')
+
+    def test_register_choice_authenticated_patient(self):
+        """Test registration choice page redirects authenticated patient to patient dashboard"""
+        User.objects.create_user(username='testpatient', password='password123', role='patient')
+        self.client.login(username='testpatient', password='password123')
+        url = reverse('register_choice')
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 302)
+        self.assertRedirects(response, reverse('patient_dashboard'))
+
+    def test_register_choice_authenticated_therapist(self):
+        """Test registration choice page redirects authenticated therapist to therapist dashboard"""
+        User.objects.create_user(username='testtherapist', password='password123', role='therapist')
+        self.client.login(username='testtherapist', password='password123')
+        url = reverse('register_choice')
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 302)
+        self.assertRedirects(response, reverse('therapist_dashboard'))
+
     def test_register_patient_view_post_success(self):
         """Test patient registration is successful and redirects to patient dashboard"""
         url = reverse('register_patient')

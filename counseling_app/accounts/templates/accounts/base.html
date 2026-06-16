@@ -13,21 +13,21 @@
     <!-- Custom Glassmorphism CSS Stylesheet -->
     <style>
         :root {
-            --bg-gradient-start: #0a0518;
-            --bg-gradient-end: #120b29;
-            --card-bg: rgba(255, 255, 255, 0.03);
-            --card-border: rgba(255, 255, 255, 0.07);
-            --primary: #7c3aed;
-            --primary-hover: #9061f9;
-            --accent: #22d3ee;
-            --accent-glow: rgba(34, 211, 238, 0.15);
-            --text-primary: #f3f4f6;
-            --text-secondary: #9ca3af;
-            --text-muted: #6b7280;
+            --bg-gradient-start: #f7f5ff;
+            --bg-gradient-end:   #ede9fd;
+            --card-bg:     rgba(255, 255, 255, 0.55);
+            --card-border: rgba(124, 58, 237, 0.13);
+            --primary:       #5830d1;
+            --primary-hover: #4622b3;
+            --accent:      #7c3aed;
+            --accent-glow: rgba(124, 58, 237, 0.15);
+            --text-primary:   #120b29;
+            --text-secondary: #555175;
+            --text-muted:     #6c698f;
             --success: #10b981;
-            --error: #ef4444;
-            --info: #3b82f6;
-            --shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+            --error:   #ef4444;
+            --info:    #3b82f6;
+            --shadow: 0 8px 32px 0 rgba(88, 48, 209, 0.08);
             --radius: 16px;
             --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
@@ -59,17 +59,18 @@
             filter: blur(150px);
             z-index: 0;
             pointer-events: none;
-            opacity: 0.25;
         }
         body::before {
             top: 10%;
             left: 10%;
-            background: var(--primary);
+            background: #7c3aed;
+            opacity: 0.10;
         }
         body::after {
             bottom: 15%;
             right: 10%;
-            background: var(--accent);
+            background: #c4b5fd;
+            opacity: 0.18;
         }
 
         header {
@@ -78,8 +79,8 @@
             z-index: 10;
             backdrop-filter: blur(12px);
             -webkit-backdrop-filter: blur(12px);
-            border-bottom: 1px solid var(--card-border);
-            background: rgba(10, 5, 24, 0.6);
+            border-bottom: 1px solid rgba(124, 58, 237, 0.10);
+            background: rgba(247, 245, 255, 0.85);
         }
 
         .nav-container {
@@ -100,7 +101,7 @@
             display: flex;
             align-items: center;
             gap: 0.5rem;
-            background: linear-gradient(to right, var(--text-primary), var(--accent));
+            background: linear-gradient(to right, #120b29, #7c3aed);
             -webkit-background-clip: text;
             background-clip: text;
             -webkit-text-fill-color: transparent;
@@ -126,16 +127,16 @@
         }
 
         .nav-link:hover {
-            color: var(--accent);
-            text-shadow: 0 0 8px var(--accent-glow);
+            color: #7c3aed;
+            text-shadow: none;
         }
 
         .nav-btn {
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid var(--card-border);
+            background: rgba(124, 58, 237, 0.05);
+            border: 1px solid rgba(124, 58, 237, 0.15);
             padding: 0.5rem 1.25rem;
             border-radius: 9999px;
-            color: var(--text-primary);
+            color: #7c3aed;
             text-decoration: none;
             font-weight: 600;
             font-size: 0.9rem;
@@ -143,14 +144,15 @@
         }
 
         .nav-btn:hover {
-            background: var(--primary);
-            border-color: var(--primary);
-            box-shadow: 0 4px 15px rgba(124, 58, 237, 0.4);
+            background: #7c3aed;
+            border-color: #7c3aed;
+            color: white;
+            box-shadow: 0 4px 15px rgba(124, 58, 237, 0.25);
         }
 
         .nav-btn-accent {
-            background: var(--accent);
-            color: #0a0518;
+            background: #5830d1;
+            color: #ffffff;
             border: none;
             padding: 0.5rem 1.25rem;
             border-radius: 9999px;
@@ -161,8 +163,8 @@
         }
 
         .nav-btn-accent:hover {
-            background: #ffffff;
-            box-shadow: 0 4px 15px rgba(34, 211, 238, 0.4);
+            background: #4622b3;
+            box-shadow: 0 4px 15px rgba(88, 48, 209, 0.3);
         }
 
         main {
@@ -197,8 +199,8 @@
         }
 
         .glass-card:hover {
-            border-color: rgba(255, 255, 255, 0.12);
-            box-shadow: 0 12px 40px 0 rgba(0, 0, 0, 0.45);
+            border-color: rgba(124, 58, 237, 0.22);
+            box-shadow: 0 12px 40px 0 rgba(88, 48, 209, 0.12);
         }
 
         .page-title {
@@ -237,25 +239,24 @@
             animation: slideIn 0.3s ease-out;
             backdrop-filter: blur(8px);
             -webkit-backdrop-filter: blur(8px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
         }
 
         .alert-success {
-            background: rgba(16, 185, 129, 0.15);
-            color: #6ee7b7;
-            border-color: rgba(16, 185, 129, 0.2);
+            background: rgba(16, 185, 129, 0.10);
+            color: #065f46;
+            border: 1px solid rgba(16, 185, 129, 0.25);
         }
 
         .alert-danger, .alert-error {
-            background: rgba(239, 68, 68, 0.15);
-            color: #fca5a5;
-            border-color: rgba(239, 68, 68, 0.2);
+            background: rgba(239, 68, 68, 0.08);
+            color: #991b1b;
+            border: 1px solid rgba(239, 68, 68, 0.2);
         }
 
         .alert-info {
-            background: rgba(59, 130, 246, 0.15);
-            color: #93c5fd;
-            border-color: rgba(59, 130, 246, 0.2);
+            background: rgba(88, 48, 209, 0.08);
+            color: #3730a3;
+            border: 1px solid rgba(88, 48, 209, 0.2);
         }
 
         @keyframes slideIn {
@@ -285,11 +286,11 @@
         }
 
         input[type="text"], input[type="email"], input[type="password"], textarea, select {
-            background: rgba(255, 255, 255, 0.04);
-            border: 1px solid var(--card-border);
+            background: rgba(255, 255, 255, 0.75);
+            border: 1px solid rgba(124, 58, 237, 0.18);
             border-radius: 8px;
             padding: 0.85rem 1rem;
-            color: var(--text-primary);
+            color: #120b29;
             font-family: inherit;
             font-size: 0.95rem;
             transition: var(--transition);
@@ -298,9 +299,9 @@
 
         input:focus, textarea:focus, select:focus {
             outline: none;
-            border-color: var(--accent);
-            box-shadow: 0 0 10px var(--accent-glow);
-            background: rgba(255, 255, 255, 0.08);
+            border-color: #7c3aed;
+            box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.12);
+            background: #ffffff;
         }
 
         .form-help {
@@ -343,6 +344,25 @@
 
         .form-footer a:hover {
             text-decoration: underline;
+        }
+
+        /* Back Button Style */
+        .btn-back {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.9rem;
+            margin-bottom: 1.5rem;
+            transition: var(--transition);
+            width: fit-content;
+        }
+
+        .btn-back:hover {
+            color: var(--accent);
+            transform: translateX(-4px);
         }
 
         /* Footer styling */
@@ -391,8 +411,7 @@
                     </li>
                 {% else %}
                     <li><a href="{% url 'login' %}" class="nav-link">Login</a></li>
-                    <li><a href="{% url 'register_patient' %}" class="nav-link">Patient Sign Up</a></li>
-                    <li><a href="{% url 'register_therapist' %}" class="nav-btn-accent">Therapist Portal</a></li>
+                    <li><a href="{% url 'register_choice' %}" class="nav-btn-accent">Register</a></li>
                 {% endif %}
             </ul>
         </div>

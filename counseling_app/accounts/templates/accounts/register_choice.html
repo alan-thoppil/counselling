@@ -1,0 +1,414 @@
+{% extends 'accounts/base.html' %}
+
+{% block title %}Join MindWell - Create Your Account{% endblock %}
+
+{% block extra_head %}
+<style>
+    /* Light theme override for registration choice page */
+    body {
+        background: linear-gradient(135deg, #f7f5ff 0%, #f0ecfc 100%) !important;
+        color: #2e2a52 !important;
+    }
+    
+    body::before {
+        background: #7c3aed !important;
+        opacity: 0.12 !important;
+    }
+    body::after {
+        background: #22d3ee !important;
+        opacity: 0.12 !important;
+    }
+    
+    header {
+        background: rgba(247, 245, 255, 0.8) !important;
+        border-bottom: 1px solid rgba(124, 58, 237, 0.1) !important;
+    }
+    
+    .logo {
+        background: linear-gradient(to right, #120b29, #7c3aed) !important;
+        -webkit-background-clip: text !important;
+        background-clip: text !important;
+        -webkit-text-fill-color: transparent !important;
+    }
+    
+    .nav-link {
+        color: #555175 !important;
+    }
+    
+    .nav-link:hover {
+        color: #7c3aed !important;
+    }
+    
+    .nav-btn {
+        background: rgba(124, 58, 237, 0.05) !important;
+        border: 1px solid rgba(124, 58, 237, 0.15) !important;
+        color: #7c3aed !important;
+    }
+    
+    .nav-btn:hover {
+        background: #7c3aed !important;
+        color: white !important;
+        border-color: #7c3aed !important;
+    }
+
+    /* Selection Section */
+    .selection-section {
+        width: 100%;
+        max-width: 960px;
+        margin: 2rem auto;
+        padding: 0 1rem;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .selection-header {
+        text-align: center;
+        margin-bottom: 3.5rem;
+    }
+
+    .selection-title {
+        font-family: 'Outfit', sans-serif;
+        font-size: 2.75rem;
+        font-weight: 800;
+        color: #120b29;
+        margin-bottom: 0.75rem;
+        letter-spacing: -0.025em;
+    }
+
+    .selection-subtitle {
+        color: #555175;
+        font-size: 1.1rem;
+        max-width: 500px;
+        margin: 0 auto;
+        line-height: 1.5;
+    }
+
+    .cards-container {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 2.5rem;
+        width: 100%;
+    }
+
+    .choice-card {
+        background: rgba(255, 255, 255, 0.5) !important;
+        border: 1px solid rgba(124, 58, 237, 0.15) !important;
+        backdrop-filter: blur(20px) !important;
+        -webkit-backdrop-filter: blur(20px) !important;
+        border-radius: 20px;
+        padding: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        box-shadow: 0 10px 30px rgba(124, 58, 237, 0.03);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .card-body {
+        padding: 2rem 2.5rem 2.5rem;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        width: 100%;
+        flex-grow: 1;
+    }
+
+    /* Soft glows behind cards on hover */
+    .choice-card::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle, rgba(124, 58, 237, 0.06) 0%, transparent 60%);
+        opacity: 0;
+        transition: opacity 0.4s ease;
+        pointer-events: none;
+        z-index: 0;
+    }
+
+    .choice-card:hover::before {
+        opacity: 1;
+    }
+
+    .choice-card:hover {
+        transform: translateY(-8px);
+        border-color: rgba(124, 58, 237, 0.35) !important;
+        box-shadow: 0 20px 45px rgba(124, 58, 237, 0.1) !important;
+    }
+
+    .card-img-banner {
+        width: 100%;
+        height: 220px;
+        overflow: hidden;
+        border-radius: 16px 16px 0 0;
+        position: relative;
+        z-index: 1;
+        flex-shrink: 0;
+    }
+
+    .card-img-banner img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        object-position: top center;
+        transition: transform 0.5s ease;
+    }
+
+    .choice-card:hover .card-img-banner img {
+        transform: scale(1.05);
+    }
+
+    .card-img-badge {
+        position: absolute;
+        top: 1rem;
+        right: 1rem;
+        padding: 0.3rem 0.85rem;
+        border-radius: 9999px;
+        font-size: 0.75rem;
+        font-weight: 700;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+    }
+
+    .patient-badge {
+        background: rgba(8, 145, 178, 0.15);
+        color: #0891b2;
+        border: 1px solid rgba(8, 145, 178, 0.3);
+    }
+
+    .therapist-badge {
+        background: rgba(124, 58, 237, 0.15);
+        color: #6d28d9;
+        border: 1px solid rgba(124, 58, 237, 0.3);
+    }
+
+    .card-title {
+        font-family: 'Outfit', sans-serif;
+        font-size: 1.75rem;
+        font-weight: 700;
+        color: #120b29;
+        margin-bottom: 1rem;
+        z-index: 1;
+    }
+
+    .card-description {
+        color: #555175;
+        font-size: 0.95rem;
+        line-height: 1.6;
+        margin-bottom: 2rem;
+        z-index: 1;
+        flex-grow: 1;
+    }
+
+    .benefits-list {
+        list-style: none;
+        width: 100%;
+        text-align: left;
+        margin-bottom: 2.5rem;
+        z-index: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+
+    .benefit-bullet {
+        display: flex;
+        align-items: flex-start;
+        gap: 0.75rem;
+        font-size: 0.9rem;
+        color: #4b4869;
+        line-height: 1.4;
+    }
+
+    .bullet-check {
+        color: #7c3aed;
+        font-weight: bold;
+        flex-shrink: 0;
+    }
+
+    .btn-choice {
+        width: 100%;
+        padding: 1rem 1.5rem;
+        border-radius: 9999px;
+        font-weight: 700;
+        font-size: 1rem;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        z-index: 1;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+    }
+
+    .btn-patient {
+        background: #0891b2 !important;
+        color: white !important;
+        box-shadow: 0 4px 15px rgba(8, 145, 178, 0.25);
+    }
+
+    .btn-patient:hover {
+        background: #0e7490 !important;
+        box-shadow: 0 6px 20px rgba(8, 145, 178, 0.35);
+        transform: translateY(-1px);
+    }
+
+    .btn-therapist {
+        background: #7c3aed !important;
+        color: white !important;
+        box-shadow: 0 4px 15px rgba(124, 58, 237, 0.25);
+    }
+
+    .btn-therapist:hover {
+        background: #6d28d9 !important;
+        box-shadow: 0 6px 20px rgba(124, 58, 237, 0.35);
+        transform: translateY(-1px);
+    }
+
+    .card-footer {
+        margin-top: 1.5rem;
+        font-size: 0.85rem;
+        color: #6c698f;
+        z-index: 1;
+    }
+
+    .card-footer a {
+        color: #7c3aed;
+        text-decoration: none;
+        font-weight: 600;
+        transition: color 0.2s ease;
+    }
+
+    .card-footer a:hover {
+        text-decoration: underline;
+    }
+
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @media (max-width: 768px) {
+        .cards-container {
+            grid-template-columns: 1fr;
+            gap: 2rem;
+        }
+        .choice-card {
+            padding: 2.5rem 1.75rem;
+        }
+        .selection-title {
+            font-size: 2.25rem;
+        }
+    }
+
+    /* Back Button Style Override for Light Theme */
+    .btn-back {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        color: #555175 !important;
+        text-decoration: none;
+        font-weight: 600;
+        font-size: 0.9rem;
+        margin-bottom: 1.5rem;
+        transition: var(--transition);
+        width: fit-content;
+    }
+
+    .btn-back:hover {
+        color: #7c3aed !important;
+        transform: translateX(-4px);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="selection-section">
+    <a href="{% url 'index' %}" class="btn-back" style="align-self: flex-start; margin-bottom: 2rem;">&larr; Back to Home</a>
+    <div class="selection-header">
+        <h1 class="selection-title">Begin Your Journey</h1>
+        <p class="selection-subtitle">Select the option that best describes your needs to create your account and get started.</p>
+    </div>
+    
+    <div class="cards-container">
+        <!-- Patient Card -->
+        <div class="choice-card">
+            <div class="card-img-banner">
+                <img src="/media/patient_card_img.png" alt="Patient seeking mental health support">
+                <span class="card-img-badge patient-badge">Patient</span>
+            </div>
+            <div class="card-body">
+                <h2 class="card-title">I am a Patient</h2>
+                <p class="card-description">Looking for emotional guidance, mental wellness resources, AI-powered support companion tools, or wanting to consult with professional licensed therapists.</p>
+                
+                <ul class="benefits-list">
+                    <li class="benefit-bullet">
+                        <span class="bullet-check">✓</span>
+                        <span>24/7 access to intelligent supportive companion chat tools.</span>
+                    </li>
+                    <li class="benefit-bullet">
+                        <span class="bullet-check">✓</span>
+                        <span>Match and schedule sessions with licensed therapists.</span>
+                    </li>
+                    <li class="benefit-bullet">
+                        <span class="bullet-check">✓</span>
+                        <span>Self-guided logs, journal tools, and mood trends history.</span>
+                    </li>
+                </ul>
+                
+                <a href="{% url 'register_patient' %}" class="btn-choice btn-patient">Sign Up as Patient &rarr;</a>
+                
+                <div class="card-footer">
+                    Already have a patient account? <a href="{% url 'login' %}">Log In</a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Therapist Card -->
+        <div class="choice-card">
+            <div class="card-img-banner">
+                <img src="/media/therapist_card_img.png" alt="Professional therapist in white coat">
+                <span class="card-img-badge therapist-badge">Therapist</span>
+            </div>
+            <div class="card-body">
+                <h2 class="card-title">I am a Therapist</h2>
+                <p class="card-description">A certified/licensed practitioner who wants to manage patient counseling, scheduling, treatment journals, and expand digital therapy practices.</p>
+                
+                <ul class="benefits-list">
+                    <li class="benefit-bullet">
+                        <span class="bullet-check">✓</span>
+                        <span>Streamlined calendar dashboard for simple booking management.</span>
+                    </li>
+                    <li class="benefit-bullet">
+                        <span class="bullet-check">✓</span>
+                        <span>Secure channels and profiles to safely connect with patients.</span>
+                    </li>
+                    <li class="benefit-bullet">
+                        <span class="bullet-check">✓</span>
+                        <span>Professional patient tracking, notes, and activity analytics.</span>
+                    </li>
+                </ul>
+                
+                <a href="{% url 'register_therapist' %}" class="btn-choice btn-therapist">Register as Therapist &rarr;</a>
+                
+                <div class="card-footer">
+                    Already have a therapist account? <a href="{% url 'login' %}">Log In</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

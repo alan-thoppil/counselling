@@ -41,6 +41,19 @@ def register_therapist(request):
     return render(request, 'accounts/register_therapist.html', {'form': form})
 
 
+def register_choice(request):
+    if request.user.is_authenticated:
+        if request.user.role == 'admin' or request.user.is_superuser:
+            return redirect('admin_dashboard')
+        elif request.user.is_patient():
+            return redirect('patient_dashboard')
+        elif request.user.is_therapist():
+            return redirect('therapist_dashboard')
+        return redirect('index')
+    return render(request, 'accounts/register_choice.html')
+
+
+
 def login_view(request):
     if request.method == 'POST':
         form = AuthenticationForm(data=request.POST)

@@ -150,3 +150,13 @@ ANTHROPIC_MODEL = 'claude-sonnet-4-6'
 # Email Notification Backend for Development
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 DEFAULT_FROM_EMAIL = 'support@aura.com'
+
+# CSRF Settings — prevent 403 errors in local development
+CSRF_TRUSTED_ORIGINS = [
+    'http://127.0.0.1:8000',
+    'http://localhost:8000',
+]
+CSRF_COOKIE_HTTPONLY = False   # Allow JS to read csrf cookie (needed for AJAX)
+CSRF_COOKIE_SAMESITE = 'Lax'
+SESSION_COOKIE_SAMESITE = 'Lax'
+SESSION_SAVE_EVERY_REQUEST = False  # Avoid unnecessary session churn
