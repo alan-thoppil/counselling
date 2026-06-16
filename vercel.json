@@ -2,14 +2,14 @@
   "version": 2,
   "builds": [
     {
-      "src": "counseling_app/wsgi.py",
+      "src": "counseling_app/counseling_app/wsgi.py",
       "use": "@vercel/python"
     },
     {
       "src": "build_files.sh",
       "use": "@vercel/static-build",
       "config": {
-        "distDir": "staticfiles"
+        "distDir": "counseling_app/staticfiles"
       }
     }
   ],
@@ -20,7 +20,7 @@
     },
     {
       "src": "/(.*)",
-      "dest": "counseling_app/wsgi.py"
+      "dest": "counseling_app/counseling_app/wsgi.py"
     }
   ]
 }
