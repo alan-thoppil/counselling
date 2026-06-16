@@ -1,6 +1,6 @@
 {% extends 'accounts/base.html' %}
 
-{% block title %}Therapist Dashboard | Aura{% endblock %}
+{% block title %}Therapist Dashboard | MindWell{% endblock %}
 
 {% block extra_head %}
 <style>
@@ -301,7 +301,7 @@
 {% block content %}
 <h1 class="page-title" style="text-align: left; width: 100%; max-width: 1200px;">Therapist Workspace</h1>
 <p class="page-subtitle" style="text-align: left; width: 100%; max-width: 1200px; margin-top: -1.25rem; margin-bottom: 1.5rem;">
-    Review upcoming patient requests, track crisis alerts, and consult with the Aura AI helper.
+    Review upcoming patient requests, track crisis alerts, and consult with the MindWell AI helper.
 </p>
 
 <!-- Tabs Navigation -->
@@ -311,7 +311,7 @@
         Crisis Alerts
         <span id="crisis-badge" class="badge-tab" style="display: none;">0</span>
     </button>
-    <button id="tab-btn-chat" class="tab-btn" onclick="switchTab('chat')">Aura Support Chat</button>
+    <button id="tab-btn-chat" class="tab-btn" onclick="switchTab('chat')">MindWell Support Chat</button>
 </div>
 
 <!-- Tab Content: Clinical Workspace -->
@@ -338,6 +338,11 @@
                     <h3 id="patient-title" style="font-family:'Outfit'; font-size:1.25rem; font-weight:700;">Patient: John Doe</h3>
                     <p id="patient-details" style="color:var(--text-secondary); font-size:0.85rem; margin-top:0.25rem;">Session: YYYY-MM-DD at HH:MM</p>
                     <p id="patient-reason" style="font-size:0.9rem; margin-top:0.5rem; border-top:1px dashed var(--card-border); padding-top:0.5rem;"></p>
+                    <div id="session-actions-wrapper" style="display: flex; gap: 0.5rem; margin-top: 0.75rem; border-top: 1px dashed var(--card-border); padding-top: 0.75rem; flex-wrap: wrap;">
+                        <button class="btn-action" id="btn-confirm-session" style="display: none;" onclick="confirmSession()">Confirm Session</button>
+                        <button class="btn-action" id="btn-complete-session" style="display: none; background: var(--success); color: white;" onclick="completeSession()">Mark Session Completed (Done)</button>
+                        <button class="btn-outline" id="btn-cancel-session" style="display: none; border-color: var(--error); color: var(--error);" onclick="cancelSessionTherapist()">Cancel Session</button>
+                    </div>
                 </div>
 
                 <div class="form-group">
@@ -393,17 +398,17 @@
     </div>
 </div>
 
-<!-- Tab Content: Aura Support Chat -->
+<!-- Tab Content: MindWell Support Chat -->
 <div id="tab-content-chat" class="tab-content">
     <div class="widget chat-container-therapist">
-        <h2 class="widget-title">Aura Support Chat <span>AI Triage Helper</span></h2>
+        <h2 class="widget-title">MindWell Support Chat <span>AI Triage Helper</span></h2>
         <div class="chat-box" id="chat-box">
             <div class="chat-message message-ai">
-                Hello! I am Aura, your AI companion. You can chat with me here to test my triage capabilities or ask clinical-support general questions.
+                Hello! I am MindWell, your AI companion. You can chat with me here to test my triage capabilities or ask clinical-support general questions.
             </div>
         </div>
         <div class="chat-input-row">
-            <input type="text" id="chat-input" placeholder="Type a message to Aura..." onkeydown="if(event.key === 'Enter') sendChatMessage()">
+            <input type="text" id="chat-input" placeholder="Type a message to MindWell..." onkeydown="if(event.key === 'Enter') sendChatMessage()">
             <button class="btn-send" onclick="sendChatMessage()">Send</button>
         </div>
     </div>
@@ -455,6 +460,7 @@
             data.appointments.forEach(a => {
                 const li = document.createElement('li');
                 li.className = 'session-card';
+                li.id = `session-card-${a.id}`;
                 if (currentAppointmentId === a.id) {
                     li.classList.add('active');
                 }
@@ -490,7 +496,10 @@
         
         // Highlight active card
         document.querySelectorAll('.session-card').forEach(card => card.classList.remove('active'));
-        event.currentTarget.classList.add('active');
+        const selectedCard = document.getElementById(`session-card-${app.id}`);
+        if (selectedCard) {
+            selectedCard.classList.add('active');
+        }
 
         // Hide default panel & show workspace
         document.getElementById('no-selection-msg').style.display = 'none';
@@ -500,6 +509,23 @@
         document.getElementById('patient-title').innerText = `Patient: ${app.patient}`;
         document.getElementById('patient-details').innerText = `Session: ${app.date} at ${app.time} (ID: ${app.id})`;
         document.getElementById('patient-reason').innerHTML = `<strong>Session Reason:</strong> ${app.reason || 'None specified'}`;
+
+        // Show/hide action buttons based on status
+        const btnConfirm = document.getElementById('btn-confirm-session');
+        const btnComplete = document.getElementById('btn-complete-session');
+        const btnCancel = document.getElementById('btn-cancel-session');
+
+        btnConfirm.style.display = 'none';
+        btnComplete.style.display = 'none';
+        btnCancel.style.display = 'none';
+
+        if (app.status === 'pending') {
+            btnConfirm.style.display = 'inline-block';
+            btnCancel.style.display = 'inline-block';
+        } else if (app.status === 'confirmed') {
+            btnComplete.style.display = 'inline-block';
+            btnCancel.style.display = 'inline-block';
+        }
 
         // Reset inputs
         document.getElementById('private-note').value = '';
@@ -597,6 +623,126 @@
         document.querySelectorAll('.session-card').forEach(card => card.classList.remove('active'));
         document.getElementById('no-selection-msg').style.display = 'block';
         document.getElementById('workspace-content').style.display = 'none';
+    }
+
+    // Confirm Appointment
+    function confirmSession() {
+        if (!currentAppointmentId) return;
+        fetch(`/appointments/confirm/${currentAppointmentId}/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrfToken
+            }
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                alert('Session confirmed successfully!');
+                refreshSessionList(currentAppointmentId);
+            } else {
+                alert('Error confirming session: ' + (data.error || 'Unknown error'));
+            }
+        })
+        .catch(err => console.error(err));
+    }
+
+    // Complete Appointment
+    function completeSession() {
+        if (!currentAppointmentId) return;
+        fetch(`/appointments/complete/${currentAppointmentId}/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrfToken
+            }
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                alert('Session marked completed!');
+                refreshSessionList(currentAppointmentId);
+            } else {
+                alert('Error completing session: ' + (data.error || 'Unknown error'));
+            }
+        })
+        .catch(err => console.error(err));
+    }
+
+    // Cancel Appointment (Therapist Workspace Control)
+    function cancelSessionTherapist() {
+        if (!currentAppointmentId) return;
+        if (!confirm('Are you sure you want to cancel this appointment?')) return;
+        
+        fetch(`/appointments/cancel/${currentAppointmentId}/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrfToken
+            }
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                alert('Session cancelled.');
+                refreshSessionList(currentAppointmentId);
+            } else {
+                alert('Error cancelling session: ' + (data.error || 'Unknown error'));
+            }
+        })
+        .catch(err => console.error(err));
+    }
+
+    // Refresh Sidebar Appointments List and selection details
+    function refreshSessionList(selectedId) {
+        fetch('/appointments/')
+        .then(res => res.json())
+        .then(data => {
+            const list = document.getElementById('session-list');
+            list.innerHTML = '';
+            if (!data.appointments || data.appointments.length === 0) {
+                list.innerHTML = '<li class="loading-spinner">No appointments assigned.</li>';
+                return;
+            }
+
+            data.appointments.forEach(a => {
+                const li = document.createElement('li');
+                li.className = 'session-card';
+                li.id = `session-card-${a.id}`;
+                if (selectedId === a.id) {
+                    li.classList.add('active');
+                }
+                
+                let badgeClass = 'badge-info';
+                if (a.status === 'confirmed') badgeClass = 'badge-success';
+                if (a.status === 'cancelled') badgeClass = 'badge-danger';
+                if (a.status === 'completed') badgeClass = 'badge-primary';
+
+                li.onclick = () => selectAppointment(a);
+                
+                li.innerHTML = `
+                    <div style="display:flex; justify-content:space-between; align-items:center; font-weight:600;">
+                        <span>Patient: ${a.patient}</span>
+                        <span class="badge ${badgeClass}">${a.status.toUpperCase()}</span>
+                    </div>
+                    <div style="color:var(--text-secondary); font-size:0.8rem; margin-top:0.25rem;">
+                        Date: ${a.date} at ${a.time}
+                    </div>
+                    <div style="color:var(--text-muted); font-size:0.75rem; margin-top:0.5rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
+                        Reason: ${a.reason || 'None specified'}
+                    </div>
+                `;
+                list.appendChild(li);
+            });
+
+            const updatedApp = data.appointments.find(a => a.id === selectedId);
+            if (updatedApp) {
+                selectAppointment(updatedApp);
+            } else {
+                closeWorkspace();
+            }
+        })
+        .catch(err => console.error(err));
     }
 
     // Load Crisis Detection Logs
@@ -728,6 +874,78 @@
         box.appendChild(div);
         // Scroll to bottom
         box.scrollTop = box.scrollHeight;
+    }
+
+    function confirmSession() {
+        if (!currentAppointmentId) return;
+        if (!confirm('Confirm this session scheduling request?')) return;
+        
+        fetch(`/appointments/confirm/${currentAppointmentId}/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrfToken
+            }
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                alert('Session confirmed successfully!');
+                loadAppointments();
+                closeWorkspace();
+            } else {
+                alert('Error confirming: ' + (data.error || 'Unknown error'));
+            }
+        })
+        .catch(err => console.error(err));
+    }
+
+    function completeSession() {
+        if (!currentAppointmentId) return;
+        if (!confirm('Mark this session as successfully completed?')) return;
+        
+        fetch(`/appointments/complete/${currentAppointmentId}/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrfToken
+            }
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                alert('Session marked completed!');
+                loadAppointments();
+                closeWorkspace();
+            } else {
+                alert('Error completing: ' + (data.error || 'Unknown error'));
+            }
+        })
+        .catch(err => console.error(err));
+    }
+
+    function cancelSessionTherapist() {
+        if (!currentAppointmentId) return;
+        if (!confirm('Are you sure you want to cancel this session?')) return;
+        
+        fetch(`/appointments/cancel/${currentAppointmentId}/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrfToken
+            }
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                alert('Session cancelled.');
+                loadAppointments();
+                closeWorkspace();
+            } else {
+                alert('Error cancelling: ' + (data.error || 'Unknown error'));
+            }
+        })
+        .catch(err => console.error(err));
     }
 </script>
 {% endblock %}

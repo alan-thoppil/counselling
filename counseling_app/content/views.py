@@ -1,4 +1,5 @@
 from django.contrib.auth.decorators import login_required
+from django.views.decorators.http import require_POST
 from django.shortcuts import get_object_or_404
 from django.http import JsonResponse
 import json
@@ -137,3 +138,101 @@ def assessment(request):
         })
 
     return JsonResponse({'error': 'Method not allowed'}, status=405)
+
+
+@login_required
+@require_POST
+def create_category(request):
+    if not (request.user.is_superuser or getattr(request.user, 'role', '') == 'admin'):
+        return JsonResponse({'error': 'Unauthorized'}, status=403)
+    try:
+        data = json.loads(request.body)
+        name = data.get('name', '').strip()
+        description = data.get('description', '').strip()
+        if not name:
+            return JsonResponse({'error': 'Name is required'}, status=400)
+        category, created = Category.objects.get_or_create(
+            name=name,
+            defaults={'description': description}
+        )
+        if not created:
+            return JsonResponse({'error': 'Category with this name already exists'}, status=400)
+        return JsonResponse({'success': True, 'id': category.id, 'name': category.name})
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+
+
+@login_required
+@require_POST
+def delete_category(request, category_id):
+    if not (request.user.is_superuser or getattr(request.user, 'role', '') == 'admin'):
+        return JsonResponse({'error': 'Unauthorized'}, status=403)
+    category = get_object_or_404(Category, id=category_id)
+    category.delete()
+    return JsonResponse({'success': True})
+
+
+@login_required
+@require_POST
+def create_article(request):
+    if not (request.user.is_superuser or getattr(request.user, 'role', '') == 'admin'):
+        return JsonResponse({'error': 'Unauthorized'}, status=403)
+    try:
+        data = json.loads(request.body)
+        title = data.get('title', '').strip()
+        category_id = data.get('category_id')
+        content_type = data.get('content_type', 'article')
+        body = data.get('body', '').strip()
+        video_url = data.get('video_url', '').strip()
+        
+        if not title:
+            return JsonResponse({'error': 'Title is required'}, status=400)
+            
+        category = get_object_or_404(Category, id=category_id) if category_id else None
+        
+        article = Article.objects.create(
+            title=title,
+            category=category,
+            content_type=content_type,
+            body=body,
+            video_url=video_url,
+            author=request.user
+        )
+        return JsonResponse({'success': True, 'id': article.id, 'title': article.title})
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+
+
+@login_required
+@require_POST
+def edit_article(request, article_id):
+    if not (request.user.is_superuser or getattr(request.user, 'role', '') == 'admin'):
+        return JsonResponse({'error': 'Unauthorized'}, status=403)
+    try:
+        article = get_object_or_404(Article, id=article_id)
+        data = json.loads(request.body)
+        article.title = data.get('title', article.title).strip()
+        
+        category_id = data.get('category_id')
+        if category_id:
+            article.category = get_object_or_404(Category, id=category_id)
+        else:
+            article.category = None
+            
+        article.content_type = data.get('content_type', article.content_type)
+        article.body = data.get('body', article.body).strip()
+        article.video_url = data.get('video_url', article.video_url).strip()
+        article.save()
+        return JsonResponse({'success': True})
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+
+
+@login_required
+@require_POST
+def delete_article(request, article_id):
+    if not (request.user.is_superuser or getattr(request.user, 'role', '') == 'admin'):
+        return JsonResponse({'error': 'Unauthorized'}, status=403)
+    article = get_object_or_404(Article, id=article_id)
+    article.delete()
+    return JsonResponse({'success': True})

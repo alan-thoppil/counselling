@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Aura - AI Counseling{% endblock %}</title>
+    <title>{% block title %}MindWell - AI Counseling{% endblock %}</title>
     
     <!-- Google Fonts: Inter and Outfit -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -102,6 +102,7 @@
             gap: 0.5rem;
             background: linear-gradient(to right, var(--text-primary), var(--accent));
             -webkit-background-clip: text;
+            background-clip: text;
             -webkit-text-fill-color: transparent;
         }
 
@@ -371,11 +372,13 @@
 <body>
     <header>
         <div class="nav-container">
-            <a href="{% url 'index' %}" class="logo">Aura<span>.</span></a>
+            <a href="{% url 'index' %}" class="logo">MindWell<span>.</span></a>
             <ul class="nav-links">
                 {% if user.is_authenticated %}
                     <li><span class="nav-link" style="cursor: default; opacity: 0.7;">Hello, {{ user.username }}</span></li>
-                    {% if user.is_patient %}
+                    {% if user.role == 'admin' or user.is_superuser %}
+                        <li><a href="{% url 'admin_dashboard' %}" class="nav-link">Dashboard</a></li>
+                    {% elif user.is_patient %}
                         <li><a href="{% url 'patient_dashboard' %}" class="nav-link">Dashboard</a></li>
                     {% elif user.is_therapist %}
                         <li><a href="{% url 'therapist_dashboard' %}" class="nav-link">Dashboard</a></li>
@@ -411,7 +414,7 @@
 
     <footer>
         <div class="container">
-            <p>&copy; 2026 Aura AI-Assisted Counseling Services. All rights reserved.</p>
+            <p>&copy; 2026 MindWell AI-Assisted Counseling Services. All rights reserved.</p>
         </div>
     </footer>
 </body>

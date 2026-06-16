@@ -6,7 +6,7 @@ logger = logging.getLogger(__name__)
 
 def send_appointment_email(appointment, action):
     """Sends email notifications for appointment activities (booking, confirmation, cancellation)"""
-    subject = f"Aura Appointment {action.capitalize()}: {appointment.date} at {appointment.time}"
+    subject = f"MindWell Appointment {action.capitalize()}: {appointment.date} at {appointment.time}"
     
     if action == 'booked':
         message = (
@@ -15,8 +15,35 @@ def send_appointment_email(appointment, action):
             f"{appointment.date} at {appointment.time}.\n\n"
             f"Reason: {appointment.reason or 'None'}\n"
             f"Status: {appointment.status.capitalize()}\n\n"
-            f"Thank you for choosing Aura!\n"
-            f"Aura Support Team"
+            f"Thank you for choosing MindWell!\n"
+            f"MindWell Support Team"
+        )
+    elif action == 'confirmed':
+        message = (
+            f"Hello {appointment.patient.username},\n\n"
+            f"Your counseling appointment with Therapist {appointment.therapist.username} on "
+            f"{appointment.date} at {appointment.time} has been CONFIRMED.\n\n"
+            f"Professional Preparation Guidelines:\n"
+            f"- Please find a quiet, private, and comfortable space free from distractions.\n"
+            f"- Log in to your MindWell dashboard 5 minutes before the session starts.\n"
+            f"- Ensure a stable internet connection and that your audio/video device is working properly.\n\n"
+            f"If you need to reschedule or have any questions, please contact our support team at support@mindwell.com.\n\n"
+            f"Thank you for choosing MindWell!\n"
+            f"MindWell Support Team"
+        )
+    elif action == 'completed':
+        message = (
+            f"Hello {appointment.patient.username},\n\n"
+            f"Your appointment with Therapist {appointment.therapist.username} on "
+            f"{appointment.date} at {appointment.time} has been marked as COMPLETED.\n\n"
+            f"Post-Session Self-Care Guidelines:\n"
+            f"- Take 10-15 minutes to reflect on the insights and takeaways from today's session.\n"
+            f"- Log in to your MindWell dashboard to review shared therapist feedback and clinical summaries.\n"
+            f"- Continue recording your mood daily in the Mood Journal Tracker to monitor your emotional progress.\n"
+            f"- Practice any breathing or grounding exercises discussed during your session.\n\n"
+            f"We are here to support you on your wellness journey.\n\n"
+            f"Warm regards,\n"
+            f"MindWell Support Team"
         )
     elif action == 'cancelled':
         message = (
@@ -25,14 +52,14 @@ def send_appointment_email(appointment, action):
             f"{appointment.date} at {appointment.time} has been successfully cancelled.\n\n"
             f"If this was a mistake, please visit the dashboard to schedule a new session.\n\n"
             f"Thank you,\n"
-            f"Aura Support Team"
+            f"MindWell Support Team"
         )
     else:
         message = (
             f"Hello {appointment.patient.username},\n\n"
             f"Your appointment status with Therapist {appointment.therapist.username} is now "
             f"updated to '{appointment.status.capitalize()}'.\n\n"
-            f"Aura Support Team"
+            f"MindWell Support Team"
         )
 
     recipient_list = []

@@ -1,0 +1,1022 @@
+{% extends 'accounts/base.html' %}
+
+{% block title %}Admin Control Workspace | MindWell{% endblock %}
+
+{% block extra_head %}
+<style>
+    .dashboard-grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 2rem;
+        width: 100%;
+        max-width: 1200px;
+        margin-top: 1rem;
+    }
+
+    /* Tabs styling */
+    .tabs-container {
+        display: flex;
+        gap: 1rem;
+        margin-bottom: 2rem;
+        border-bottom: 1px solid var(--card-border);
+        width: 100%;
+        max-width: 1200px;
+    }
+
+    .tab-btn {
+        background: none;
+        border: none;
+        color: var(--text-secondary);
+        font-family: 'Outfit', sans-serif;
+        font-size: 1.1rem;
+        font-weight: 600;
+        cursor: pointer;
+        padding: 0.75rem 1.25rem;
+        border-bottom: 3px solid transparent;
+        transition: var(--transition);
+    }
+
+    .tab-btn:hover {
+        color: var(--accent);
+    }
+
+    .tab-btn.active {
+        color: var(--accent);
+        border-bottom-color: var(--accent);
+    }
+
+    .tab-content {
+        display: none;
+        width: 100%;
+    }
+
+    .tab-content.active {
+        display: block;
+    }
+
+    /* Analytics Cards */
+    .stats-row {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .stat-card {
+        background: var(--card-bg);
+        border: 1px solid var(--card-border);
+        border-radius: var(--radius);
+        padding: 1.5rem 2rem;
+        box-shadow: var(--shadow);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        text-align: left;
+        position: relative;
+        overflow: hidden;
+        transition: var(--transition);
+    }
+
+    .stat-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 4px;
+        height: 100%;
+        background: var(--accent);
+    }
+
+    .stat-card:hover {
+        transform: translateY(-3px);
+        border-color: var(--accent);
+        box-shadow: 0 0 15px var(--accent-glow);
+    }
+
+    .stat-card-primary::before { background: var(--primary); }
+    .stat-card-success::before { background: var(--success); }
+    .stat-card-info::before { background: var(--info); }
+
+    .stat-val {
+        font-family: 'Outfit', sans-serif;
+        font-size: 2.25rem;
+        font-weight: 800;
+        margin-bottom: 0.25rem;
+        background: linear-gradient(to right, #ffffff, var(--text-secondary));
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
+    .stat-label {
+        font-size: 0.85rem;
+        color: var(--text-secondary);
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+
+    /* Table Styling */
+    .table-container {
+        overflow-x: auto;
+        width: 100%;
+        background: var(--card-bg);
+        border: 1px solid var(--card-border);
+        border-radius: var(--radius);
+        padding: 1.5rem;
+        box-shadow: var(--shadow);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        margin-bottom: 2rem;
+    }
+
+    .admin-table {
+        width: 100%;
+        border-collapse: collapse;
+        text-align: left;
+    }
+
+    .admin-table th, .admin-table td {
+        padding: 1rem;
+        border-bottom: 1px solid var(--card-border);
+        font-size: 0.9rem;
+    }
+
+    .admin-table th {
+        font-family: 'Outfit', sans-serif;
+        color: var(--text-secondary);
+        font-weight: 600;
+        text-transform: uppercase;
+        font-size: 0.8rem;
+        letter-spacing: 0.05em;
+    }
+
+    .admin-table tr:hover {
+        background: rgba(255, 255, 255, 0.01);
+    }
+
+    .badge {
+        padding: 0.2rem 0.6rem;
+        border-radius: 9999px;
+        font-size: 0.75rem;
+        font-weight: 700;
+    }
+    .badge-patient { background: rgba(59, 130, 246, 0.15); color: #60a5fa; }
+    .badge-therapist { background: rgba(124, 58, 237, 0.15); color: #c084fc; }
+    .badge-admin { background: rgba(239, 68, 68, 0.15); color: #f87171; }
+
+    .badge-active { background: rgba(16, 185, 129, 0.15); color: #34d399; }
+    .badge-inactive { background: rgba(239, 68, 68, 0.15); color: #f87171; }
+
+    .btn-action-sm {
+        padding: 0.35rem 0.75rem;
+        font-size: 0.8rem;
+        border-radius: 6px;
+        cursor: pointer;
+        font-weight: 600;
+        transition: var(--transition);
+    }
+    .btn-toggle-on { background: rgba(16, 185, 129, 0.15); border: 1px solid var(--success); color: #34d399; }
+    .btn-toggle-off { background: rgba(239, 68, 68, 0.15); border: 1px solid var(--error); color: #f87171; }
+    
+    .btn-delete {
+        background: transparent;
+        border: 1px solid var(--error);
+        color: var(--error);
+    }
+    .btn-delete:hover {
+        background: var(--error);
+        color: white;
+    }
+
+    /* Glassmorphic Modal */
+    .modal-backdrop {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(10, 5, 24, 0.75);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 1000;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.3s ease;
+    }
+
+    .modal-backdrop.open {
+        opacity: 1;
+        pointer-events: auto;
+    }
+
+    .modal-container {
+        background: rgba(20, 10, 40, 0.95);
+        border: 1px solid var(--card-border);
+        border-radius: var(--radius);
+        padding: 2rem;
+        width: 90%;
+        max-width: 750px;
+        max-height: 85vh;
+        overflow-y: auto;
+        box-shadow: var(--shadow);
+        transform: scale(0.9);
+        transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        position: relative;
+    }
+
+    .modal-backdrop.open .modal-container {
+        transform: scale(1);
+    }
+
+    .modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 1px dashed var(--card-border);
+        padding-bottom: 1rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .modal-title {
+        font-family: 'Outfit', sans-serif;
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--accent);
+    }
+
+    .modal-close-btn {
+        background: none;
+        border: none;
+        color: var(--text-secondary);
+        font-size: 1.75rem;
+        cursor: pointer;
+        transition: var(--transition);
+        line-height: 1;
+    }
+
+    .modal-close-btn:hover {
+        color: var(--error);
+    }
+
+    /* Modal Form / Box */
+    .admin-box {
+        background: var(--card-bg);
+        border: 1px solid var(--card-border);
+        border-radius: var(--radius);
+        padding: 2rem;
+        box-shadow: var(--shadow);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        margin-bottom: 2rem;
+    }
+
+    .admin-box-title {
+        font-family: 'Outfit', sans-serif;
+        font-size: 1.25rem;
+        font-weight: 700;
+        margin-bottom: 1.25rem;
+        border-bottom: 1px dashed var(--card-border);
+        padding-bottom: 0.5rem;
+        color: var(--accent);
+    }
+
+    /* Form Layout Grid */
+    .form-grid-2 {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+    }
+    @media (max-width: 768px) {
+        .form-grid-2 {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<h1 class="page-title" style="text-align: left; width: 100%; max-width: 1200px;">Control Workspace</h1>
+<p class="page-subtitle" style="text-align: left; width: 100%; max-width: 1200px; margin-top: -1.25rem; margin-bottom: 1.5rem;">
+    Manage users, configure topic categories, upload educational resources, and review session bookings.
+</p>
+
+<!-- Tab Controls -->
+<div class="tabs-container">
+    <button id="tab-btn-overview" class="tab-btn active" onclick="switchTab('overview')">Overview</button>
+    <button id="tab-btn-users" class="tab-btn" onclick="switchTab('users')">User Directory</button>
+    <button id="tab-btn-topics" class="tab-btn" onclick="switchTab('topics')">Topics & Categories</button>
+    <button id="tab-btn-content" class="tab-btn" onclick="switchTab('content')">Educational Resources</button>
+    <button id="tab-btn-bookings" class="tab-btn" onclick="switchTab('bookings')">Bookings</button>
+</div>
+
+<!-- 1. OVERVIEW TAB -->
+<div id="tab-content-overview" class="tab-content active">
+    <div class="stats-row">
+        <div class="stat-card">
+            <div class="stat-val">{{ total_patients }}</div>
+            <div class="stat-label">Total Patients</div>
+        </div>
+        <div class="stat-card stat-card-primary">
+            <div class="stat-val">{{ total_therapists }}</div>
+            <div class="stat-label">Total Therapists</div>
+        </div>
+        <div class="stat-card stat-card-success">
+            <div class="stat-val">{{ total_bookings }}</div>
+            <div class="stat-label">Total Sessions</div>
+        </div>
+        <div class="stat-card stat-card-info">
+            <div class="stat-val">{{ total_articles }}</div>
+            <div class="stat-label">Resources Uploaded</div>
+        </div>
+    </div>
+    
+    <div class="admin-box">
+        <h3 class="admin-box-title">System Operations Console</h3>
+        <p style="font-size: 0.95rem; line-height: 1.6; color: var(--text-secondary);">
+            Welcome to the MindWell Administration Portal. As an administrator, you hold direct governance over educational articles, therapeutic worksheets/exercises, user activation logs, and clinic bookings. 
+            <br><br>
+            Please use the tabs above to navigate different modules. All modifications take effect in real-time across the client application.
+        </p>
+    </div>
+</div>
+
+<!-- 2. USERS TAB -->
+<div id="tab-content-users" class="tab-content">
+    <div class="table-container">
+        <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--card-border); padding-bottom:0.75rem; margin-bottom:1rem; flex-wrap:wrap; gap:1rem;">
+            <h3 class="admin-box-title" style="border:none; margin-bottom:0;">Registered Users</h3>
+            <div style="display: flex; gap: 0.5rem;">
+                <button class="btn-action-sm" id="btn-filter-all" style="background: var(--accent); color: #0a0518; border: none;" onclick="filterUsers('all')">All Users</button>
+                <button class="btn-action-sm btn-outline" id="btn-filter-patient" onclick="filterUsers('patient')">Patients</button>
+                <button class="btn-action-sm btn-outline" id="btn-filter-therapist" onclick="filterUsers('therapist')">Therapists</button>
+            </div>
+        </div>
+        <table class="admin-table">
+            <thead>
+                <tr>
+                    <th>Username</th>
+                    <th>Email Address</th>
+                    <th>Role</th>
+                    <th>Phone</th>
+                    <th>Account Status</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody id="users-table-body">
+                <tr>
+                    <td colspan="6" style="text-align:center; color:var(--text-muted);">Loading user directory...</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- 3. TOPICS TAB -->
+<div id="tab-content-topics" class="tab-content">
+    <div class="dashboard-grid" style="grid-template-columns: 1.5fr 1fr; gap:1.5rem;">
+        <!-- Left: Topics List -->
+        <div class="table-container" style="margin-bottom:0;">
+            <h3 class="admin-box-title" style="border:none; margin-bottom:0.75rem;">Active Categories</h3>
+            <table class="admin-table">
+                <thead>
+                    <tr>
+                        <th>Topic Name</th>
+                        <th>Description</th>
+                        <th>Resource Count</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody id="categories-table-body">
+                    <tr>
+                        <td colspan="4" style="text-align:center; color:var(--text-muted);">Loading topics...</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- Right: Add Topic Form -->
+        <div class="admin-box" style="margin-bottom:0;">
+            <h3 class="admin-box-title">Create New Category</h3>
+            <div style="display:flex; flex-direction:column; gap:1rem;">
+                <div class="form-group">
+                    <label for="new-cat-name">Category Title</label>
+                    <input type="text" id="new-cat-name" placeholder="e.g. Anxiety Management, CBT Exercises">
+                </div>
+                <div class="form-group">
+                    <label for="new-cat-desc">Description</label>
+                    <textarea id="new-cat-desc" rows="3" placeholder="Brief description of resources categorized here..."></textarea>
+                </div>
+                <button class="btn-submit" onclick="addCategory()" style="margin:0; padding:0.75rem;">Create Topic</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 4. EDUCATIONAL RESOURCES TAB -->
+<div id="tab-content-content" class="tab-content">
+    <div class="dashboard-grid" style="grid-template-columns: 1.8fr 1.2fr; gap:1.5rem;">
+        <!-- Left: Resources List -->
+        <div class="table-container" style="margin-bottom:0;">
+            <h3 class="admin-box-title" style="border:none; margin-bottom:0.75rem;">Educational Materials</h3>
+            <table class="admin-table">
+                <thead>
+                    <tr>
+                        <th>Title</th>
+                        <th>Type</th>
+                        <th>Category</th>
+                        <th>Created At</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody id="articles-table-body">
+                    <tr>
+                        <td colspan="5" style="text-align:center; color:var(--text-muted);">Loading resources...</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Right: Upload Form -->
+        <div class="admin-box" style="margin-bottom:0;">
+            <h3 class="admin-box-title" id="resource-form-title">Upload Resource</h3>
+            <div style="display:flex; flex-direction:column; gap:1rem;">
+                <input type="hidden" id="edit-article-id" value="">
+                
+                <div class="form-group">
+                    <label for="res-title">Content Title</label>
+                    <input type="text" id="res-title" placeholder="e.g. 4-7-8 Breathing Guide">
+                </div>
+                
+                <div class="form-grid-2">
+                    <div class="form-group">
+                        <label for="res-type">Content Type</label>
+                        <select id="res-type" onchange="toggleVideoUrlField()">
+                            <option value="article">Article Document</option>
+                            <option value="video">Video URL link</option>
+                            <option value="exercise">Exercise Worksheet</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="res-category">Category Topic</label>
+                        <select id="res-category">
+                            <option value="">No categories loaded</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group" id="video-url-group" style="display: none;">
+                    <label for="res-video-url">Video / YouTube URL</label>
+                    <input type="text" id="res-video-url" placeholder="https://www.youtube.com/watch?v=...">
+                </div>
+
+                <div class="form-group">
+                    <label for="res-body">Content Body / Worksheet Instructions</label>
+                    <textarea id="res-body" rows="6" placeholder="Write full article body text, or detail worksheet prompt steps..."></textarea>
+                </div>
+
+                <div style="display:flex; gap:0.5rem;">
+                    <button class="btn-submit" id="btn-submit-resource" onclick="submitResource()" style="flex:1; margin:0; padding:0.75rem;">Publish Resource</button>
+                    <button class="btn-outline" id="btn-cancel-edit" onclick="cancelResourceEdit()" style="display:none; padding:0.75rem;">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 5. BOOKINGS TAB -->
+<div id="tab-content-bookings" class="tab-content">
+    <div class="table-container">
+        <h3 class="admin-box-title" style="border:none; margin-bottom:0.75rem;">Clinic Appointment Log</h3>
+        <table class="admin-table">
+            <thead>
+                <tr>
+                    <th>Appointment ID</th>
+                    <th>Patient</th>
+                    <th>Therapist</th>
+                    <th>Date & Time</th>
+                    <th>Status</th>
+                    <th>Reason</th>
+                </tr>
+            </thead>
+            <tbody id="bookings-table-body">
+                <tr>
+                    <td colspan="6" style="text-align:center; color:var(--text-muted);">Loading bookings...</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Enrolled Users Modal -->
+<div id="enrolled-modal" class="modal-backdrop" onclick="handleBackdropClick(event)">
+    <div class="modal-container">
+        <div class="modal-header">
+            <h3 class="modal-title" id="enrolled-modal-title">Enrolled Connections</h3>
+            <button class="modal-close-btn" onclick="closeEnrolledModal()">&times;</button>
+        </div>
+        <div id="enrolled-modal-body">
+            <div style="overflow-x: auto;">
+                <table class="admin-table" style="margin-bottom:0;">
+                    <thead>
+                        <tr id="enrolled-table-headers">
+                            <!-- Headers dynamically updated via JS -->
+                        </tr>
+                    </thead>
+                    <tbody id="enrolled-table-body">
+                        <!-- Rows dynamically populated via JS -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const csrfToken = '{{ csrf_token }}';
+    let categoriesList = [];
+
+    // On Load
+    window.addEventListener('DOMContentLoaded', () => {
+        loadUsers();
+        loadCategories();
+        loadResources();
+        loadBookings();
+    });
+
+    // Tab Navigation Logic
+    function switchTab(tabName) {
+        document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+
+        document.getElementById(`tab-btn-${tabName}`).classList.add('active');
+        document.getElementById(`tab-content-${tabName}`).classList.add('active');
+    }
+
+    let allUsers = [];
+    let currentFilterRole = 'all';
+
+    // Load User Directory
+    function loadUsers() {
+        fetch('/accounts/users/')
+        .then(res => res.json())
+        .then(data => {
+            allUsers = data.users || [];
+            filterUsers(currentFilterRole);
+        })
+        .catch(err => console.error(err));
+    }
+
+    function renderUsersTable(usersList) {
+        const tbody = document.getElementById('users-table-body');
+        tbody.innerHTML = '';
+        
+        if (usersList.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; color:var(--text-muted);">No users found.</td></tr>';
+            return;
+        }
+
+        usersList.forEach(u => {
+            const tr = document.createElement('tr');
+            const badgeRole = u.role === 'patient' ? 'badge-patient' : (u.role === 'therapist' ? 'badge-therapist' : 'badge-admin');
+            const badgeStatus = u.is_active ? 'badge-active' : 'badge-inactive';
+            
+            const btnClass = u.is_active ? 'btn-toggle-off' : 'btn-toggle-on';
+            const btnText = u.is_active ? 'Deactivate' : 'Activate';
+
+            let enrolledBtnHtml = '';
+            if (u.role === 'patient') {
+                enrolledBtnHtml = `<button class="btn-action-sm" style="background: rgba(124, 58, 237, 0.15); border: 1px solid var(--primary); color: #c084fc; margin-right: 0.5rem;" onclick="viewEnrolled(${u.id})">Enrolled Therapists</button>`;
+            } else if (u.role === 'therapist') {
+                enrolledBtnHtml = `<button class="btn-action-sm" style="background: rgba(34, 211, 238, 0.15); border: 1px solid var(--accent); color: var(--accent); margin-right: 0.5rem;" onclick="viewEnrolled(${u.id})">Enrolled Patients</button>`;
+            }
+
+            tr.innerHTML = `
+                <td style="font-weight:600;">${u.username}</td>
+                <td>${u.email || '—'}</td>
+                <td><span class="badge ${badgeRole}">${u.role.toUpperCase()}</span></td>
+                <td>${u.phone || '—'}</td>
+                <td><span class="badge ${badgeStatus}">${u.is_active ? 'ACTIVE' : 'DEACTIVATED'}</span></td>
+                <td>
+                    ${enrolledBtnHtml}
+                    <button class="btn-action-sm ${btnClass}" onclick="toggleUserStatus(${u.id})">${btnText}</button>
+                </td>
+            `;
+            tbody.appendChild(tr);
+        });
+    }
+
+    function filterUsers(role) {
+        currentFilterRole = role;
+        
+        // Update filter button designs
+        document.querySelectorAll('[id^="btn-filter-"]').forEach(btn => {
+            btn.classList.add('btn-outline');
+            btn.style.background = 'transparent';
+            btn.style.color = 'var(--text-primary)';
+            btn.style.border = '1px solid var(--card-border)';
+        });
+        
+        const activeBtn = document.getElementById(`btn-filter-${role}`);
+        if (activeBtn) {
+            activeBtn.classList.remove('btn-outline');
+            activeBtn.style.background = 'var(--accent)';
+            activeBtn.style.color = '#0a0518';
+            activeBtn.style.border = 'none';
+        }
+
+        if (role === 'all') {
+            renderUsersTable(allUsers);
+        } else {
+            const filtered = allUsers.filter(u => u.role === role);
+            renderUsersTable(filtered);
+        }
+    }
+
+    // Toggle User active state
+    function toggleUserStatus(userId) {
+        fetch(`/accounts/users/toggle/${userId}/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrfToken
+            }
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                loadUsers();
+            } else {
+                alert(data.error || 'Failed to toggle status');
+            }
+        })
+        .catch(err => console.error(err));
+    }
+
+    // Load Categories
+    function loadCategories() {
+        fetch('/content/categories/')
+        .then(res => res.json())
+        .then(data => {
+            categoriesList = data.categories || [];
+            
+            // Populating Categories list Table
+            const tbody = document.getElementById('categories-table-body');
+            tbody.innerHTML = '';
+            
+            // Populating Categories Form Select Dropdown
+            const select = document.getElementById('res-category');
+            select.innerHTML = '<option value="">-- Select Category --</option>';
+
+            if (categoriesList.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; color:var(--text-muted);">No categories configured.</td></tr>';
+                return;
+            }
+
+            categoriesList.forEach(c => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td style="font-weight:600; color:var(--accent);">${c.name}</td>
+                    <td style="color:var(--text-secondary);">${c.description || '—'}</td>
+                    <td style="font-weight:bold;">${c.article_count}</td>
+                    <td>
+                        <button class="btn-action-sm btn-delete" onclick="deleteCategory(${c.id})">Delete</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+
+                // Add to Select field
+                const opt = document.createElement('option');
+                opt.value = c.id;
+                opt.innerText = c.name;
+                select.appendChild(opt);
+            });
+        })
+        .catch(err => console.error(err));
+    }
+
+    // Add New Category
+    function addCategory() {
+        const name = document.getElementById('new-cat-name').value.trim();
+        const desc = document.getElementById('new-cat-desc').value.trim();
+        
+        if (!name) {
+            alert('Category Title is required!');
+            return;
+        }
+
+        fetch('/content/categories/create/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrfToken
+            },
+            body: JSON.stringify({ name: name, description: desc })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                document.getElementById('new-cat-name').value = '';
+                document.getElementById('new-cat-desc').value = '';
+                loadCategories();
+            } else {
+                alert(data.error || 'Failed to create category');
+            }
+        })
+        .catch(err => console.error(err));
+    }
+
+    // Delete Category
+    function deleteCategory(catId) {
+        if (!confirm('Are you sure you want to delete this category? All articles associated will remain without category.')) return;
+        
+        fetch(`/content/categories/delete/${catId}/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrfToken
+            }
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                loadCategories();
+                loadResources();
+            }
+        })
+        .catch(err => console.error(err));
+    }
+
+    // Toggle Video URL Field based on selected content type
+    function toggleVideoUrlField() {
+        const type = document.getElementById('res-type').value;
+        const group = document.getElementById('video-url-group');
+        if (type === 'video') {
+            group.style.display = 'block';
+        } else {
+            group.style.display = 'none';
+        }
+    }
+
+    // Load Educational Resources
+    function loadResources() {
+        fetch('/content/articles/')
+        .then(res => res.json())
+        .then(data => {
+            const tbody = document.getElementById('articles-table-body');
+            tbody.innerHTML = '';
+            
+            if (!data.articles || data.articles.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; color:var(--text-muted);">No materials uploaded.</td></tr>';
+                return;
+            }
+
+            data.articles.forEach(a => {
+                const tr = document.createElement('tr');
+                const date = new Date(a.created_at).toLocaleDateString();
+
+                tr.innerHTML = `
+                    <td style="font-weight:600;">${a.title}</td>
+                    <td><span style="font-style:italic;">${a.content_type.toUpperCase()}</span></td>
+                    <td style="color:var(--accent); font-weight:500;">${a.category || 'Unassigned'}</td>
+                    <td style="color:var(--text-muted); font-size:0.8rem;">${date}</td>
+                    <td>
+                        <div style="display:flex; gap:0.4rem;">
+                            <button class="btn-action-sm" style="background:rgba(34,211,238,0.1); border:1px solid var(--accent); color:var(--accent);" onclick="startEditResource(${a.id})">Edit</button>
+                            <button class="btn-action-sm btn-delete" onclick="deleteResource(${a.id})">Delete</button>
+                        </div>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        })
+        .catch(err => console.error(err));
+    }
+
+    // Submit Educational Resource Upload / Edit
+    function submitResource() {
+        const title = document.getElementById('res-title').value.trim();
+        const type = document.getElementById('res-type').value;
+        const categoryId = document.getElementById('res-category').value;
+        const body = document.getElementById('res-body').value.trim();
+        const videoUrl = document.getElementById('res-video-url').value.trim();
+        const editId = document.getElementById('edit-article-id').value;
+
+        if (!title) {
+            alert('Title is required!');
+            return;
+        }
+
+        const payload = {
+            title: title,
+            content_type: type,
+            category_id: categoryId ? parseInt(categoryId) : null,
+            body: body,
+            video_url: videoUrl
+        };
+
+        const endpoint = editId ? `/content/articles/edit/${editId}/` : '/content/articles/create/';
+
+        fetch(endpoint, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrfToken
+            },
+            body: JSON.stringify(payload)
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                alert(editId ? 'Resource updated successfully!' : 'Resource published successfully!');
+                cancelResourceEdit();
+                loadResources();
+                loadCategories();
+            } else {
+                alert(data.error || 'Failed to submit resource.');
+            }
+        })
+        .catch(err => console.error(err));
+    }
+
+    // Edit Resource Mode
+    function startEditResource(articleId) {
+        // Fetch article detail
+        fetch(`/content/articles/${articleId}/`)
+        .then(res => res.json())
+        .then(data => {
+            document.getElementById('edit-article-id').value = data.id;
+            document.getElementById('res-title').value = data.title;
+            document.getElementById('res-type').value = data.content_type;
+            
+            // Map category name to select ID
+            const foundCat = categoriesList.find(c => c.name === data.category);
+            document.getElementById('res-category').value = foundCat ? foundCat.id : '';
+            
+            document.getElementById('res-body').value = data.body || '';
+            document.getElementById('res-video-url').value = data.video_url || '';
+            
+            // UI adjustments
+            document.getElementById('resource-form-title').innerText = 'Edit Resource Details';
+            document.getElementById('btn-submit-resource').innerText = 'Save Changes';
+            document.getElementById('btn-cancel-edit').style.display = 'inline-block';
+            
+            toggleVideoUrlField();
+        })
+        .catch(err => console.error(err));
+    }
+
+    // Cancel Resource Editing Mode
+    function cancelResourceEdit() {
+        document.getElementById('edit-article-id').value = '';
+        document.getElementById('res-title').value = '';
+        document.getElementById('res-type').value = 'article';
+        document.getElementById('res-category').value = '';
+        document.getElementById('res-body').value = '';
+        document.getElementById('res-video-url').value = '';
+        
+        document.getElementById('resource-form-title').innerText = 'Upload Resource';
+        document.getElementById('btn-submit-resource').innerText = 'Publish Resource';
+        document.getElementById('btn-cancel-edit').style.display = 'none';
+        
+        toggleVideoUrlField();
+    }
+
+    // Delete Resource
+    function deleteResource(articleId) {
+        if (!confirm('Are you sure you want to delete this educational resource?')) return;
+        
+        fetch(`/content/articles/delete/${articleId}/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrfToken
+            }
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                loadResources();
+                loadCategories();
+            }
+        })
+        .catch(err => console.error(err));
+    }
+
+    // Load Appointments Bookings List
+    function loadBookings() {
+        fetch('/appointments/')
+        .then(res => res.json())
+        .then(data => {
+            const tbody = document.getElementById('bookings-table-body');
+            tbody.innerHTML = '';
+            
+            if (!data.appointments || data.appointments.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; color:var(--text-muted);">No booking requests found.</td></tr>';
+                return;
+            }
+
+            data.appointments.forEach(b => {
+                const tr = document.createElement('tr');
+                
+                let badgeClass = 'badge-info';
+                if (b.status === 'confirmed') badgeClass = 'badge-success';
+                if (b.status === 'cancelled') badgeClass = 'badge-danger';
+                if (b.status === 'completed') badgeClass = 'badge-primary';
+
+                tr.innerHTML = `
+                    <td style="font-weight:bold;">#${b.id}</td>
+                    <td style="font-weight:600;">${b.patient}</td>
+                    <td>${b.therapist}</td>
+                    <td style="color:var(--text-secondary); font-size:0.85rem;">${b.date} at ${b.time}</td>
+                    <td><span class="badge ${badgeClass}">${b.status.toUpperCase()}</span></td>
+                    <td style="color:var(--text-muted); font-size:0.8rem; max-width:200px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="${b.reason || ''}">
+                        ${b.reason || '—'}
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        })
+        .catch(err => console.error(err));
+    }
+
+    // Modal Interaction Handlers for Enrolled Connections
+    function viewEnrolled(userId) {
+        fetch(`/accounts/users/${userId}/enrolled/`)
+        .then(res => res.json())
+        .then(data => {
+            const modal = document.getElementById('enrolled-modal');
+            const title = document.getElementById('enrolled-modal-title');
+            const headers = document.getElementById('enrolled-table-headers');
+            const tbody = document.getElementById('enrolled-table-body');
+            
+            const target = data.target_user;
+            const isTherapist = target.role === 'therapist';
+            
+            title.innerText = isTherapist 
+                ? `Patients Enrolled with ${target.username}`
+                : `Therapists Enrolled with ${target.username}`;
+                
+            // Update Headers
+            headers.innerHTML = isTherapist
+                ? `<th>Patient Username</th><th>Email</th><th>Phone</th><th>Booking Count</th><th>Session Statuses</th>`
+                : `<th>Therapist Username</th><th>Specialisation</th><th>Email</th><th>Booking Count</th><th>Session Statuses</th>`;
+                
+            // Update Body
+            tbody.innerHTML = '';
+            if (data.enrolled.length === 0) {
+                const cols = 5;
+                tbody.innerHTML = `<tr><td colspan="${cols}" style="text-align:center; color:var(--text-muted); padding: 2.5rem 0;">No active enrollment connections found.</td></tr>`;
+            } else {
+                data.enrolled.forEach(item => {
+                    const tr = document.createElement('tr');
+                    
+                    // Create status badges
+                    const statusBadges = item.statuses.map(s => {
+                        let bClass = 'badge-info';
+                        if (s === 'confirmed') bClass = 'badge-success';
+                        if (s === 'cancelled') bClass = 'badge-danger';
+                        if (s === 'completed') bClass = 'badge-primary';
+                        return `<span class="badge ${bClass}" style="margin-right:0.25rem;">${s.toUpperCase()}</span>`;
+                    }).join('');
+                    
+                    if (isTherapist) {
+                        tr.innerHTML = `
+                            <td style="font-weight:600;">${item.username}</td>
+                            <td>${item.email || '—'}</td>
+                            <td>${item.phone || '—'}</td>
+                            <td style="font-weight:bold; text-align:center;">${item.booking_count}</td>
+                            <td>${statusBadges || '—'}</td>
+                        `;
+                    } else {
+                        tr.innerHTML = `
+                            <td style="font-weight:600;">${item.username}</td>
+                            <td style="color:var(--accent); font-weight:500;">${item.specialisation}</td>
+                            <td>${item.email || '—'}</td>
+                            <td style="font-weight:bold; text-align:center;">${item.booking_count}</td>
+                            <td>${statusBadges || '—'}</td>
+                        `;
+                    }
+                    tbody.appendChild(tr);
+                });
+            }
+            
+            // Open modal
+            modal.classList.add('open');
+        })
+        .catch(err => console.error(err));
+    }
+
+    function closeEnrolledModal() {
+        document.getElementById('enrolled-modal').classList.remove('open');
+    }
+
+    function handleBackdropClick(event) {
+        if (event.target.id === 'enrolled-modal') {
+            closeEnrolledModal();
+        }
+    }
+</script>
+{% endblock %}

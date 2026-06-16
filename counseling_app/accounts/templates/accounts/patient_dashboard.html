@@ -1,8 +1,10 @@
 {% extends 'accounts/base.html' %}
 
-{% block title %}Patient Dashboard | Aura{% endblock %}
+{% block title %}Patient Dashboard | MindWell{% endblock %}
 
 {% block extra_head %}
+<!-- Chart.js CDN -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <style>
     .dashboard-grid {
         display: grid;
@@ -187,6 +189,200 @@
         background: var(--error);
         color: white;
     }
+
+    /* Visual Stepper Styles with HSL Gradients */
+    .stepper-wrapper {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 1rem;
+        padding: 0.6rem 0.85rem;
+        background: rgba(255, 255, 255, 0.02);
+        border-radius: 8px;
+        border: 1px solid var(--card-border);
+    }
+    .step-item {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        position: relative;
+        opacity: 0.4;
+        transition: var(--transition);
+    }
+    .step-item.active {
+        opacity: 1;
+    }
+    .step-circle {
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.05);
+        border: 2px solid var(--card-border);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        font-size: 0.8rem;
+        color: var(--text-secondary);
+        transition: var(--transition);
+    }
+    .step-item.active .step-circle {
+        background: linear-gradient(135deg, hsl(271, 76%, 53%) 0%, hsl(192, 85%, 48%) 100%);
+        border-color: transparent;
+        color: white;
+        box-shadow: 0 0 15px rgba(34, 211, 238, 0.4);
+    }
+    .step-item.completed .step-circle {
+        background: linear-gradient(135deg, hsl(162, 76%, 40%) 0%, hsl(140, 70%, 45%) 100%);
+        border-color: transparent;
+        color: white;
+        box-shadow: 0 0 10px rgba(16, 185, 129, 0.3);
+    }
+    .step-label {
+        font-size: 0.75rem;
+        margin-top: 0.25rem;
+        font-weight: 600;
+        color: var(--text-secondary);
+    }
+    .step-item.active .step-label {
+        color: var(--text-primary);
+        text-shadow: 0 0 8px rgba(34, 211, 238, 0.2);
+    }
+    .step-line {
+        flex: 1;
+        height: 2px;
+        background: var(--card-border);
+        margin: 0 -10px;
+        position: relative;
+        top: -15px; /* aligns line with circle center */
+    }
+    .step-line.filled {
+        background: var(--primary);
+    }
+    .step-line.completed {
+        background: var(--success);
+    }
+
+    /* Cancelled Banner */
+    .cancelled-banner {
+        background: rgba(239, 68, 68, 0.1);
+        border: 1px dashed var(--error);
+        border-radius: 8px;
+        padding: 0.5rem;
+        text-align: center;
+        color: #f87171;
+        font-size: 0.8rem;
+        font-weight: 600;
+        margin-top: 0.75rem;
+    }
+
+    /* Chart Container */
+    .chart-container {
+        position: relative;
+        height: 220px;
+        width: 100%;
+        margin-top: 1rem;
+        background: rgba(0,0,0,0.15);
+        border: 1px solid var(--card-border);
+        border-radius: 10px;
+        padding: 0.75rem;
+    }
+
+    /* AI Recommendation Box */
+    .ai-rec-box {
+        background: rgba(124, 58, 237, 0.07);
+        border: 1px solid rgba(124, 58, 237, 0.25);
+        border-radius: 12px;
+        padding: 1.25rem;
+        margin-top: 1.25rem;
+        box-shadow: var(--shadow);
+    }
+    .ai-rec-title {
+        font-family: 'Outfit', sans-serif;
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: #c084fc;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-bottom: 0.75rem;
+        border-bottom: 1px dashed rgba(124, 58, 237, 0.2);
+        padding-bottom: 0.5rem;
+    }
+    .ai-rec-content {
+        font-size: 0.85rem;
+        line-height: 1.6;
+        color: var(--text-primary);
+    }
+    .ai-rec-content ul {
+        margin-left: 1rem;
+        margin-top: 0.5rem;
+    }
+    .ai-rec-content li {
+        margin-bottom: 0.5rem;
+    }
+
+    /* Chat bubble animations & suggestions */
+    @keyframes bubbleFadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(12px) scale(0.97);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+    }
+    .chat-message {
+        animation: bubbleFadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) both;
+    }
+    .chat-suggestions {
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+        margin-top: 0.5rem;
+        margin-bottom: 0.25rem;
+    }
+    .suggestion-chip {
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid var(--card-border);
+        border-radius: 9999px;
+        padding: 0.35rem 0.75rem;
+        font-size: 0.75rem;
+        color: var(--accent);
+        cursor: pointer;
+        transition: var(--transition);
+    }
+    .suggestion-chip:hover {
+        background: rgba(34, 211, 238, 0.1);
+        border-color: var(--accent);
+        transform: translateY(-1px);
+        box-shadow: 0 2px 8px rgba(34, 211, 238, 0.2);
+    }
+    .pulse-dot {
+        width: 8px;
+        height: 8px;
+        background-color: var(--success);
+        border-radius: 50%;
+        display: inline-block;
+        box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+        animation: pulse 1.6s infinite;
+    }
+    @keyframes pulse {
+        0% {
+            transform: scale(0.9);
+            box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+        }
+        70% {
+            transform: scale(1);
+            box-shadow: 0 0 0 6px rgba(16, 185, 129, 0);
+        }
+        100% {
+            transform: scale(0.9);
+            box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
+        }
+    }
 </style>
 {% endblock %}
 
@@ -199,14 +395,19 @@
 <div class="dashboard-grid">
     <!-- 1. AI Chat Assistant Widget -->
     <div class="widget">
-        <h2 class="widget-title">Aura Support Chat <span>AI Triage</span></h2>
+        <h2 class="widget-title">MindWell Support Chat <span style="display:flex; align-items:center; gap:0.4rem; font-size:0.8rem; color:var(--success); font-weight:600;"><span class="pulse-dot"></span>Aura Active</span></h2>
         <div class="chat-box" id="chat-box">
             <div class="chat-message message-ai">
-                Hello! I am Aura, your AI mental health companion. How are you feeling today?
+                Hello! I am MindWell, your AI mental health companion. How are you feeling today?
             </div>
         </div>
+        <div class="chat-suggestions" id="chat-suggestions">
+            <button class="suggestion-chip" onclick="useSuggestion('I am feeling anxious')">Feeling anxious 😟</button>
+            <button class="suggestion-chip" onclick="useSuggestion('Can you recommend a breathing exercise?')">Breathing exercise 🫁</button>
+            <button class="suggestion-chip" onclick="useSuggestion('I need help processing my thoughts')">Need guidance 🧠</button>
+        </div>
         <div class="chat-input-row">
-            <input type="text" id="chat-input" placeholder="Type a message to Aura..." onkeydown="if(event.key === 'Enter') sendChatMessage()">
+            <input type="text" id="chat-input" placeholder="Type a message to MindWell..." onkeydown="if(event.key === 'Enter') sendChatMessage()">
             <button class="btn-send" onclick="sendChatMessage()">Send</button>
         </div>
     </div>
@@ -235,12 +436,16 @@
                 <div style="display:grid; grid-template-columns: 1fr 1fr; gap:0.5rem;">
                     <div class="form-group">
                         <label for="book-date">Date</label>
-                        <input type="text" id="book-date" placeholder="YYYY-MM-DD">
+                        <input type="date" id="book-date">
                     </div>
                     <div class="form-group">
                         <label for="book-time">Time</label>
-                        <input type="text" id="book-time" placeholder="HH:MM">
+                        <input type="time" id="book-time">
                     </div>
+                </div>
+                <div class="form-group">
+                    <label for="book-email">Notification Email</label>
+                    <input type="email" id="book-email" placeholder="Confirm your email for status updates" value="{{ user.email }}">
                 </div>
                 <div class="form-group">
                     <label for="book-reason">Reason</label>
@@ -276,6 +481,20 @@
                 <li class="history-item" style="color:var(--text-muted);">Loading mood history...</li>
             </ul>
         </div>
+
+        <div style="margin-top: 1rem;">
+            <h3>Mood Variation Chart</h3>
+            <div class="chart-container">
+                <canvas id="moodChart"></canvas>
+            </div>
+        </div>
+
+        <div class="ai-rec-box">
+            <h3 class="ai-rec-title">✨ AI Coping Recommendation</h3>
+            <div class="ai-rec-content" id="recommendation-content">
+                Log a mood above to receive a personalized AI recommendation.
+            </div>
+        </div>
     </div>
 
     <!-- 4. Mental Health Journal Widget -->
@@ -307,12 +526,21 @@
     const csrfToken = '{{ csrf_token }}';
     let selectedMoodScore = 0;
     let chatHistory = [];
+    let moodChartInstance = null;
 
     // On Load
     window.addEventListener('DOMContentLoaded', () => {
+        // Restrict book-date to today or future dates
+        const dateInput = document.getElementById('book-date');
+        if (dateInput) {
+            const todayStr = new Date().toISOString().split('T')[0];
+            dateInput.setAttribute('min', todayStr);
+        }
+
         loadAppointments();
         loadMoodLogs();
         loadJournalEntries();
+        loadAIRecommendations();
     });
 
     // Handle mood button selections
@@ -354,6 +582,7 @@
                 selectedMoodScore = 0;
                 document.querySelectorAll('.mood-btn').forEach(btn => btn.classList.remove('selected'));
                 loadMoodLogs();
+                loadAIRecommendations();
             } else {
                 alert('Error logging mood: ' + (data.error || 'Unknown error'));
             }
@@ -389,8 +618,113 @@
                 `;
                 list.appendChild(li);
             });
+
+            // Refresh Chart.js data
+            loadMoodChartData();
         })
         .catch(err => console.error(err));
+    }
+
+    // Fetch Mood Chart Data
+    function loadMoodChartData() {
+        fetch('/mood/chart/')
+        .then(res => res.json())
+        .then(data => {
+            if (data.chart_data) {
+                renderMoodChart(data.chart_data);
+            }
+        })
+        .catch(err => console.error(err));
+    }
+
+    // Render Chart.js
+    function renderMoodChart(chartData) {
+        const canvas = document.getElementById('moodChart');
+        if (!canvas) return;
+        const ctx = canvas.getContext('2d');
+        
+        const labels = chartData.map(d => d.date);
+        const dataPoints = chartData.map(d => d.mood_score);
+        
+        if (moodChartInstance) {
+            moodChartInstance.destroy();
+        }
+        
+        moodChartInstance = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Mood Trend',
+                    data: dataPoints,
+                    borderColor: '#22d3ee',
+                    backgroundColor: 'rgba(34, 211, 238, 0.08)',
+                    borderWidth: 2,
+                    tension: 0.35,
+                    fill: true,
+                    pointBackgroundColor: '#7c3aed',
+                    pointBorderColor: '#22d3ee',
+                    pointRadius: 4,
+                    pointHoverRadius: 6
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        min: 1,
+                        max: 5,
+                        ticks: {
+                            stepSize: 1,
+                            callback: function(value) {
+                                const emojis = ['😢', '😕', '😐', '🙂', '😊'];
+                                return emojis[value - 1] || value;
+                            },
+                            color: '#9ca3af'
+                        },
+                        grid: {
+                            color: 'rgba(255, 255, 255, 0.05)'
+                        }
+                    },
+                    x: {
+                        ticks: {
+                            color: '#9ca3af'
+                        },
+                        grid: {
+                            display: false
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                }
+            }
+        });
+    }
+
+    // Fetch AI coping recommendations
+    function loadAIRecommendations() {
+        const container = document.getElementById('recommendation-content');
+        if (!container) return;
+
+        container.innerHTML = '<span style="color:var(--accent); font-style:italic; font-size:0.85rem;">Consulting AI model...</span>';
+
+        fetch('/api/mood-recommendation/')
+        .then(res => res.json())
+        .then(data => {
+            if (data.recommendation) {
+                container.innerHTML = data.recommendation;
+            } else {
+                container.innerHTML = '<span style="color:var(--text-muted); font-size:0.85rem;">No recommendations generated yet. Log your mood to start.</span>';
+            }
+        })
+        .catch(err => {
+            console.error(err);
+            container.innerHTML = '<span style="color:var(--error); font-size:0.85rem;">Error reaching AI helper.</span>';
+        });
     }
 
     // Submit Journal Entry
@@ -467,7 +801,7 @@
         .catch(err => console.error(err));
     }
 
-    // Load Appointments
+    // Load Appointments with Stepper Status tracking
     function loadAppointments() {
         fetch('/appointments/')
         .then(res => res.json())
@@ -481,26 +815,68 @@
             data.appointments.forEach(a => {
                 const li = document.createElement('li');
                 li.className = 'history-item';
+                li.style.flexDirection = 'column';
+                li.style.alignItems = 'stretch';
+                li.style.gap = '0.75rem';
                 
                 let badgeClass = 'badge-info';
                 if (a.status === 'confirmed') badgeClass = 'badge-success';
                 if (a.status === 'cancelled') badgeClass = 'badge-danger';
+                if (a.status === 'completed') badgeClass = 'badge-primary';
 
-                const cancelBtn = a.status !== 'cancelled' 
-                    ? `<button class="btn-cancel" onclick="cancelAppointment(${a.id})">Cancel</button>`
+                const cancelBtn = (a.status === 'pending' || a.status === 'confirmed') 
+                    ? `<button class="btn-cancel" onclick="cancelAppointment(${a.id})">Cancel Session</button>`
                     : '';
 
+                // Stepper state variables
+                const isPending = a.status === 'pending';
+                const isConfirmed = a.status === 'confirmed';
+                const isCompleted = a.status === 'completed';
+                const isCancelled = a.status === 'cancelled';
+
+                let stepperHtml = '';
+                if (!isCancelled) {
+                    stepperHtml = `
+                        <div class="stepper-wrapper">
+                            <div class="step-item ${isPending ? 'active' : ''} ${isConfirmed || isCompleted ? 'completed active' : ''}">
+                                <div class="step-circle">${isConfirmed || isCompleted ? '✓' : '1'}</div>
+                                <div class="step-label">Pending</div>
+                            </div>
+                            <div class="step-line ${isConfirmed || isCompleted ? 'filled' : ''} ${isCompleted ? 'completed' : ''}"></div>
+                            <div class="step-item ${isConfirmed ? 'active' : ''} ${isCompleted ? 'completed active' : ''}">
+                                <div class="step-circle">${isCompleted ? '✓' : '2'}</div>
+                                <div class="step-label">Confirmed</div>
+                            </div>
+                            <div class="step-line ${isCompleted ? 'completed' : ''}"></div>
+                            <div class="step-item ${isCompleted ? 'completed active' : ''}">
+                                <div class="step-circle">3</div>
+                                <div class="step-label">Done</div>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    stepperHtml = `
+                        <div class="cancelled-banner">
+                            <span>❌ This session has been cancelled.</span>
+                        </div>
+                    `;
+                }
+
                 li.innerHTML = `
-                    <div>
-                        <div style="font-weight:600;">Therapist: ${a.therapist}</div>
-                        <div style="color:var(--text-secondary); font-size:0.8rem; margin-top:0.15rem;">
-                            ${a.date} at ${a.time}
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <div>
+                            <div style="font-weight:600; font-size:1rem;">Therapist: ${a.therapist}</div>
+                            <div style="color:var(--text-secondary); font-size:0.8rem; margin-top:0.25rem;">
+                                Scheduled: <b>${a.date}</b> at <b>${a.time}</b>
+                            </div>
+                            ${a.reason ? `<div style="color:var(--text-muted); font-size:0.75rem; margin-top:0.25rem; font-style:italic;">Reason: "${a.reason}"</div>` : ''}
+                        </div>
+                        <div style="display:flex; align-items:center; gap:0.5rem; flex-shrink:0;">
+                            <span class="badge ${badgeClass}">${a.status.toUpperCase()}</span>
+                            ${cancelBtn}
                         </div>
                     </div>
-                    <div style="display:flex; align-items:center; gap:0.5rem;">
-                        <span class="badge ${badgeClass}">${a.status.toUpperCase()}</span>
-                        ${cancelBtn}
-                    </div>
+                    ${stepperHtml}
                 `;
                 list.appendChild(li);
             });
@@ -513,10 +889,16 @@
         const therapistId = document.getElementById('book-therapist').value;
         const date = document.getElementById('book-date').value;
         const time = document.getElementById('book-time').value;
+        const email = document.getElementById('book-email').value.trim();
         const reason = document.getElementById('book-reason').value;
 
         if (!therapistId || !date || !time) {
             alert('Please fill out therapist, date, and time!');
+            return;
+        }
+
+        if (email && !email.includes('@')) {
+            alert('Please enter a valid email address!');
             return;
         }
 
@@ -530,6 +912,7 @@
                 therapist_id: parseInt(therapistId),
                 date: date,
                 time: time,
+                email: email,
                 reason: reason
             })
         })
@@ -614,8 +997,17 @@
         div.className = `chat-message message-${sender}`;
         div.innerText = text;
         box.appendChild(div);
-        // Scroll to bottom
-        box.scrollTop = box.scrollHeight;
+        // Smooth scroll to bottom
+        box.scrollTo({ top: box.scrollHeight, behavior: 'smooth' });
+    }
+
+    // Trigger suggestion click to prefill and send message
+    function useSuggestion(msg) {
+        const input = document.getElementById('chat-input');
+        if (input) {
+            input.value = msg;
+            sendChatMessage();
+        }
     }
 </script>
 {% endblock %}

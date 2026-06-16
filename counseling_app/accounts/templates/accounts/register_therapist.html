@@ -1,11 +1,11 @@
 {% extends 'accounts/base.html' %}
 
-{% block title %}Therapist Sign Up | Aura{% endblock %}
+{% block title %}Therapist Sign Up | MindWell{% endblock %}
 
 {% block content %}
 <div class="glass-card">
     <h1 class="page-title">Therapist Registration</h1>
-    <p class="page-subtitle">Join Aura to manage sessions, compile notes, and assist patients with AI insights.</p>
+    <p class="page-subtitle">Join MindWell to manage sessions, compile notes, and assist patients with AI insights.</p>
     
     <form method="post" action="{% url 'register_therapist' %}">
         {% csrf_token %}

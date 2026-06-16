@@ -138,3 +138,81 @@ class AuthViewsTestCase(TestCase):
         response = self.client.post(url)
         self.assertEqual(response.status_code, 302)
         self.assertRedirects(response, reverse('login'))
+
+
+class AdminEnrolledUsersTestCase(TestCase):
+    def setUp(self):
+        self.client = Client()
+        self.admin = User.objects.create_superuser(
+            username='admin_user',
+            password='Password123!',
+            email='admin@example.com'
+        )
+        self.admin.role = 'admin'
+        self.admin.save()
+
+        self.patient = User.objects.create_user(
+            username='patient_test',
+            password='Password123!',
+            role='patient'
+        )
+        self.therapist = User.objects.create_user(
+            username='therapist_test',
+            password='Password123!',
+            role='therapist'
+        )
+        # Create therapist profile
+        TherapistProfile.objects.create(
+            user=self.therapist,
+            specialisation='Psychotherapy'
+        )
+
+        # Create an appointment
+        from appointments.models import Appointment
+        from datetime import date, time
+        self.appt = Appointment.objects.create(
+            patient=self.patient,
+            therapist=self.therapist,
+            date=date(2026, 6, 20),
+            time=time(14, 0),
+            status='confirmed',
+            reason='Anxiety consultation'
+        )
+
+    def test_get_enrolled_users_unauthorized(self):
+        """Test non-admin cannot access the enrolled users endpoint"""
+        self.client.login(username='patient_test', password='Password123!')
+        url = reverse('get_enrolled_users', args=[self.therapist.id])
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 403)
+
+    def test_get_enrolled_users_therapist_success(self):
+        """Test admin can view patients enrolled with a therapist"""
+        self.client.login(username='admin_user', password='Password123!')
+        url = reverse('get_enrolled_users', args=[self.therapist.id])
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        
+        self.assertEqual(data['target_user']['username'], 'therapist_test')
+        self.assertEqual(data['target_user']['role'], 'therapist')
+        self.assertEqual(len(data['enrolled']), 1)
+        self.assertEqual(data['enrolled'][0]['username'], 'patient_test')
+        self.assertEqual(data['enrolled'][0]['booking_count'], 1)
+        self.assertIn('confirmed', data['enrolled'][0]['statuses'])
+
+    def test_get_enrolled_users_patient_success(self):
+        """Test admin can view therapists enrolled with a patient"""
+        self.client.login(username='admin_user', password='Password123!')
+        url = reverse('get_enrolled_users', args=[self.patient.id])
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        
+        self.assertEqual(data['target_user']['username'], 'patient_test')
+        self.assertEqual(data['target_user']['role'], 'patient')
+        self.assertEqual(len(data['enrolled']), 1)
+        self.assertEqual(data['enrolled'][0]['username'], 'therapist_test')
+        self.assertEqual(data['enrolled'][0]['specialisation'], 'Psychotherapy')
+        self.assertEqual(data['enrolled'][0]['booking_count'], 1)
+
