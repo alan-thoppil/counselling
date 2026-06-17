@@ -3,7 +3,11 @@
   "builds": [
     {
       "src": "counseling_app/counseling_app/wsgi.py",
-      "use": "@vercel/python"
+      "use": "@vercel/python",
+      "config": {
+        "maxLambdaSize": "15mb",
+        "runtime": "python3.12"
+      }
     },
     {
       "src": "build_files.sh",
@@ -16,7 +20,7 @@
   "routes": [
     {
       "src": "/static/(.*)",
-      "dest": "/$1"
+      "dest": "/counseling_app/staticfiles/$1"
     },
     {
       "src": "/(.*)",
