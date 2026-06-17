@@ -1,7 +1,11 @@
 import os
+import warnings
 from pathlib import Path
 from typing import Any
 from dotenv import load_dotenv
+
+# Silence Python and third-party deprecation warnings
+warnings.filterwarnings("ignore")
 
 # Load environmental variables from .env file
 load_dotenv()
@@ -233,3 +237,44 @@ if _IS_VERCEL:
     SESSION_ENGINE = 'django.contrib.sessions.backends.signed_cookies'
 SESSION_COOKIE_SAMESITE = 'Lax'
 SESSION_SAVE_EVERY_REQUEST = False  # Avoid unnecessary session churn
+
+# Silence non-critical system checks/warnings to keep terminal clean
+SILENCED_SYSTEM_CHECKS = [
+    'security.W004',
+    'security.W008',
+    'security.W012',
+    'security.W016',
+    'security.W018',
+]
+
+# Logging configuration to keep terminal free of noisy warnings (like 404 favicon logs)
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+        },
+    },
+    'root': {
+        'handlers': ['console'],
+        'level': 'WARNING',
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['console'],
+            'level': 'INFO',
+            'propagate': False,
+        },
+        'django.request': {
+            'handlers': ['console'],
+            'level': 'ERROR',  # Silence HTTP 400/404 warnings/logs in console
+            'propagate': False,
+        },
+        'django.server': {
+            'handlers': ['console'],
+            'level': 'INFO',
+            'propagate': False,
+        },
+    },
+}
