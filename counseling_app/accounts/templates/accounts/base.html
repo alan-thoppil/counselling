@@ -368,12 +368,184 @@
         /* Footer styling */
         footer {
             border-top: 1px solid var(--card-border);
-            padding: 1.5rem 0;
-            text-align: center;
+            padding: 4rem 2rem 2rem 2rem;
+            color: var(--text-secondary);
+            background: rgba(10, 5, 24, 0.05); /* Soft transparent background */
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            z-index: 1;
+            width: 100%;
+        }
+
+        .footer-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1.5fr 1fr 1fr 1.5fr;
+            gap: 3rem;
+            text-align: left;
+        }
+
+        .footer-col {
+            display: flex;
+            flex-direction: column;
+            gap: 1.25rem;
+        }
+
+        .footer-brand-logo {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.5rem;
+            font-weight: 800;
+            text-decoration: none;
+            color: var(--text-primary);
+            background: linear-gradient(to right, #120b29, #7c3aed);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            display: inline-block;
+        }
+
+        .footer-brand-desc {
+            font-size: 0.9rem;
+            line-height: 1.6;
+            color: var(--text-muted);
+        }
+
+        .footer-col-title {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            position: relative;
+            padding-bottom: 0.5rem;
+        }
+
+        .footer-col-title::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 30px;
+            height: 2px;
+            background: var(--accent);
+            border-radius: 2px;
+        }
+
+        .footer-links {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            padding: 0;
+            margin: 0;
+        }
+
+        .footer-links a {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: var(--transition);
+            display: inline-block;
+        }
+
+        .footer-links a:hover {
+            color: var(--accent);
+            transform: translateX(4px);
+        }
+
+        .footer-contact-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.75rem;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            line-height: 1.5;
+        }
+
+        .footer-contact-icon {
+            font-size: 1.1rem;
+            color: var(--accent);
+            flex-shrink: 0;
+            margin-top: 0.1rem;
+        }
+
+        .footer-socials {
+            display: flex;
+            gap: 0.75rem;
+            margin-top: 0.5rem;
+        }
+
+        .footer-social-icon {
+            width: 36px;
+            height: 36px;
+            background: rgba(124, 58, 237, 0.08);
+            border: 1px solid rgba(124, 58, 237, 0.15);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--accent);
+            text-decoration: none;
+            font-size: 1rem;
+            transition: var(--transition);
+        }
+
+        .footer-social-icon:hover {
+            background: var(--accent);
+            color: white;
+            transform: translateY(-3px);
+            box-shadow: 0 4px 10px rgba(124, 58, 237, 0.2);
+        }
+
+        .footer-bottom {
+            max-width: 1200px;
+            margin: 3rem auto 0 auto;
+            padding-top: 2rem;
+            border-top: 1px solid var(--card-border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1.5rem;
             font-size: 0.85rem;
             color: var(--text-muted);
-            background: rgba(10, 5, 24, 0.4);
-            z-index: 1;
+        }
+
+        .footer-bottom-links {
+            display: flex;
+            gap: 1.5rem;
+        }
+
+        .footer-bottom-links a {
+            color: var(--text-muted);
+            text-decoration: none;
+            transition: var(--transition);
+        }
+
+        .footer-bottom-links a:hover {
+            color: var(--accent);
+        }
+
+        @media (max-width: 900px) {
+            .footer-container {
+                grid-template-columns: 1fr 1fr;
+                gap: 2.5rem;
+            }
+        }
+
+        @media (max-width: 600px) {
+            footer {
+                padding: 3rem 1.5rem 1.5rem 1.5rem;
+            }
+            .footer-container {
+                grid-template-columns: 1fr;
+                gap: 2rem;
+            }
+            .footer-bottom {
+                flex-direction: column;
+                text-align: center;
+                gap: 1rem;
+            }
         }
 
         /* Specific helper styles for Django default forms display */
@@ -432,8 +604,84 @@
     </main>
 
     <footer>
-        <div class="container">
+        <div class="footer-container">
+            <!-- Column 1: Brand Info -->
+            <div class="footer-col">
+                <a href="{% url 'index' %}" class="footer-brand-logo">MindWell.</a>
+                <p class="footer-brand-desc">Empowering individuals through a unique combination of clinical counseling expertise and state-of-the-art AI-assisted mental health support.</p>
+                <div class="footer-socials">
+                    <a href="#" class="footer-social-icon" aria-label="Facebook">📘</a>
+                    <a href="#" class="footer-social-icon" aria-label="Twitter">🐦</a>
+                    <a href="#" class="footer-social-icon" aria-label="LinkedIn">💼</a>
+                    <a href="#" class="footer-social-icon" aria-label="Instagram">📸</a>
+                </div>
+            </div>
+
+            <!-- Column 2: Our Services -->
+            <div class="footer-col">
+                <h4 class="footer-col-title">Our Services</h4>
+                <ul class="footer-links">
+                    <li><a href="{% url 'register_choice' %}">1-on-1 Counseling</a></li>
+                    <li><a href="{% url 'register_choice' %}">AI Empathetic Support</a></li>
+                    <li><a href="{% url 'register_choice' %}">Interactive Exercises</a></li>
+                    <li><a href="{% url 'register_choice' %}">Mood Logs & Journaling</a></li>
+                    <li><a href="{% url 'register_choice' %}">Clinical Self-Assessments</a></li>
+                    <li><a href="{% url 'register_choice' %}">Peer Support Groups</a></li>
+                </ul>
+            </div>
+
+            <!-- Column 3: Quick Links -->
+            <div class="footer-col">
+                <h4 class="footer-col-title">Quick Links</h4>
+                <ul class="footer-links">
+                    <li><a href="{% url 'index' %}">Home</a></li>
+                    {% if user.is_authenticated %}
+                        {% if user.role == 'admin' or user.is_superuser %}
+                            <li><a href="{% url 'admin_dashboard' %}">Dashboard</a></li>
+                        {% elif user.is_patient %}
+                            <li><a href="{% url 'patient_dashboard' %}">Dashboard</a></li>
+                        {% elif user.is_therapist %}
+                            <li><a href="{% url 'therapist_dashboard' %}">Dashboard</a></li>
+                        {% endif %}
+                    {% else %}
+                        <li><a href="{% url 'login' %}">Log In</a></li>
+                        <li><a href="{% url 'register_choice' %}">Sign Up</a></li>
+                    {% endif %}
+                    <li><a href="#">Privacy Policy</a></li>
+                    <li><a href="#">Terms of Service</a></li>
+                    <li><a href="#">FAQ & Support</a></li>
+                </ul>
+            </div>
+
+            <!-- Column 4: Contact Details -->
+            <div class="footer-col">
+                <h4 class="footer-col-title">Contact Us</h4>
+                <div class="footer-contact-item">
+                    <span class="footer-contact-icon">📍</span>
+                    <span>123 Wellness Way, Suite 400<br>New York, NY 10001</span>
+                </div>
+                <div class="footer-contact-item">
+                    <span class="footer-contact-icon">📞</span>
+                    <span>+1 (800) 555-MIND<br>+1 (212) 555-0199</span>
+                </div>
+                <div class="footer-contact-item">
+                    <span class="footer-contact-icon">✉️</span>
+                    <span>support@mindwell.com<br>info@mindwell.com</span>
+                </div>
+                <div class="footer-contact-item">
+                    <span class="footer-contact-icon">🕒</span>
+                    <span>Clinical Office: Mon-Fri 8 AM - 6 PM<br>AI Support Chat: 24/7/365</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer-bottom">
             <p>&copy; 2026 MindWell AI-Assisted Counseling Services. All rights reserved.</p>
+            <div class="footer-bottom-links">
+                <a href="#">Privacy Statement</a>
+                <a href="#">Terms of Use</a>
+                <a href="#">Cookies Settings</a>
+            </div>
         </div>
     </footer>
 </body>

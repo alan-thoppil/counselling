@@ -592,6 +592,188 @@
             gap: 2rem;
         }
     }
+
+    /* Therapists Section Styling */
+    .therapists-section {
+        padding: 5rem 0 3rem 0;
+        width: 100%;
+        max-width: 1100px;
+        margin: 0 auto;
+        text-align: center;
+    }
+
+    .therapists-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 2.5rem;
+        margin-top: 3rem;
+    }
+
+    .therapist-card {
+        background: #ffffff !important;
+        border: 1px solid rgba(124, 58, 237, 0.1) !important;
+        border-radius: var(--radius);
+        overflow: hidden;
+        transition: var(--transition);
+        display: flex;
+        flex-direction: column;
+        box-shadow: 0 10px 30px rgba(124, 58, 237, 0.03) !important;
+        text-align: left;
+    }
+
+    .therapist-card:hover {
+        transform: translateY(-6px);
+        border-color: rgba(124, 58, 237, 0.25) !important;
+        box-shadow: 0 15px 35px rgba(124, 58, 237, 0.08) !important;
+    }
+
+    .therapist-img-wrapper {
+        position: relative;
+        width: 100%;
+        height: 280px;
+        overflow: hidden;
+        background: #fcfbff;
+    }
+
+    .therapist-img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.5s ease;
+    }
+
+    .therapist-card:hover .therapist-img {
+        transform: scale(1.05);
+    }
+
+    .therapist-experience-badge {
+        position: absolute;
+        bottom: 1rem;
+        right: 1rem;
+        background: rgba(124, 58, 237, 0.9);
+        color: white;
+        padding: 0.35rem 0.85rem;
+        border-radius: 9999px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .therapist-content {
+        padding: 2rem;
+        display: flex;
+        flex-direction: column;
+        flex-grow: 1;
+        gap: 0.85rem;
+    }
+
+    .therapist-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+    }
+
+    .therapist-name {
+        font-family: 'Outfit', sans-serif;
+        font-size: 1.4rem;
+        font-weight: 700;
+        color: #120b29 !important;
+    }
+
+    .therapist-title {
+        font-size: 0.9rem;
+        color: #7c3aed !important;
+        font-weight: 600;
+        margin-top: 0.15rem;
+    }
+
+    .therapist-rating {
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+        font-size: 0.9rem;
+        font-weight: 700;
+        color: #120b29 !important;
+    }
+
+    .therapist-rating span {
+        color: #f59e0b; /* Gold star */
+    }
+
+    .therapist-rating-count {
+        color: #6c698f !important;
+        font-weight: 400;
+        font-size: 0.8rem;
+    }
+
+    .therapist-bio {
+        color: #6c698f !important;
+        font-size: 0.95rem;
+        line-height: 1.6;
+        flex-grow: 1;
+        margin-top: 0.25rem;
+    }
+
+    .therapist-tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        margin-top: 0.5rem;
+    }
+
+    .therapist-tag {
+        background: rgba(124, 58, 237, 0.06);
+        border: 1px solid rgba(124, 58, 237, 0.1);
+        color: #7c3aed !important;
+        padding: 0.25rem 0.65rem;
+        border-radius: 9999px;
+        font-size: 0.75rem;
+        font-weight: 600;
+    }
+
+    .therapist-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 1rem;
+        padding-top: 1rem;
+        border-top: 1px solid rgba(124, 58, 237, 0.08);
+    }
+
+    .therapist-btn {
+        background: #5830d1 !important;
+        color: white !important;
+        text-decoration: none;
+        padding: 0.6rem 1.25rem;
+        border-radius: var(--radius);
+        font-weight: 600;
+        font-size: 0.85rem;
+        transition: var(--transition);
+        box-shadow: 0 4px 12px rgba(88, 48, 209, 0.15);
+    }
+
+    .therapist-btn:hover {
+        background: #4622b3 !important;
+        transform: translateY(-1px);
+    }
+
+    .therapist-availability {
+        font-size: 0.8rem;
+        color: #10b981 !important; /* Success green */
+        display: flex;
+        align-items: center;
+        gap: 0.35rem;
+        font-weight: 600;
+    }
+
+    .dot-online {
+        width: 8px;
+        height: 8px;
+        background-color: #10b981;
+        border-radius: 50%;
+        display: inline-block;
+        box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2);
+    }
 </style>
 {% endblock %}
 
@@ -724,6 +906,107 @@
                 <h3 class="offering-title">Peer Support &amp; Groups</h3>
                 <p class="offering-desc">Connect with a warm and understanding community of peers who share your journey. Explore safe, moderated group spaces for mutual encouragement and healing.</p>
                 <a href="{% url 'register_choice' %}" class="offering-link">Join a group &rarr;</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Meet Our Therapists Section -->
+<div class="therapists-section">
+    <h2 class="section-title">Meet Our Licensed Therapists</h2>
+    <p class="section-subtitle">Consult privately with certified, compassionate mental health experts committed to your growth.</p>
+    
+    <div class="therapists-grid">
+        <!-- Doctor 1: Dr. Sarah Jenkins -->
+        <div class="therapist-card">
+            <div class="therapist-img-wrapper">
+                <img src="/media/doctor_sarah.png" alt="Dr. Sarah Jenkins" class="therapist-img">
+                <span class="therapist-experience-badge">12 Years Exp</span>
+            </div>
+            <div class="therapist-content">
+                <div class="therapist-header">
+                    <div>
+                        <h3 class="therapist-name">Dr. Sarah Jenkins</h3>
+                        <div class="therapist-title">PhD, Clinical Psychologist</div>
+                    </div>
+                    <div class="therapist-rating">
+                        <span>★</span> 4.9 <span class="therapist-rating-count">(142)</span>
+                    </div>
+                </div>
+                <p class="therapist-bio">Specializing in Cognitive Behavioral Therapy (CBT), anxiety management, and self-esteem issues. Sarah helps you build practical coping strategies for daily life.</p>
+                <div class="therapist-tags">
+                    <span class="therapist-tag">CBT</span>
+                    <span class="therapist-tag">Anxiety</span>
+                    <span class="therapist-tag">Depression</span>
+                </div>
+                <div class="therapist-footer">
+                    <div class="therapist-availability">
+                        <span class="dot-online"></span> Available Today
+                    </div>
+                    <a href="{% url 'register_choice' %}" class="therapist-btn">Book Session</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Doctor 2: Dr. Marcus Vance -->
+        <div class="therapist-card">
+            <div class="therapist-img-wrapper">
+                <img src="/media/doctor_marcus.png" alt="Dr. Marcus Vance" class="therapist-img">
+                <span class="therapist-experience-badge">15 Years Exp</span>
+            </div>
+            <div class="therapist-content">
+                <div class="therapist-header">
+                    <div>
+                        <h3 class="therapist-name">Dr. Marcus Vance</h3>
+                        <div class="therapist-title">PsyD, Trauma Specialist</div>
+                    </div>
+                    <div class="therapist-rating">
+                        <span>★</span> 4.8 <span class="therapist-rating-count">(118)</span>
+                    </div>
+                </div>
+                <p class="therapist-bio">Dedicated to helping clients navigate PTSD, complex trauma, and work-related burnout using evidence-based mindfulness and narrative therapy approaches.</p>
+                <div class="therapist-tags">
+                    <span class="therapist-tag">Trauma</span>
+                    <span class="therapist-tag">PTSD</span>
+                    <span class="therapist-tag">Burnout</span>
+                </div>
+                <div class="therapist-footer">
+                    <div class="therapist-availability">
+                        <span class="dot-online"></span> Available Tomorrow
+                    </div>
+                    <a href="{% url 'register_choice' %}" class="therapist-btn">Book Session</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Doctor 3: Dr. Aisha Rahman -->
+        <div class="therapist-card">
+            <div class="therapist-img-wrapper">
+                <img src="/media/doctor_aisha.png" alt="Dr. Aisha Rahman" class="therapist-img">
+                <span class="therapist-experience-badge">8 Years Exp</span>
+            </div>
+            <div class="therapist-content">
+                <div class="therapist-header">
+                    <div>
+                        <h3 class="therapist-name">Dr. Aisha Rahman</h3>
+                        <div class="therapist-title">LMFT, Relationship Counselor</div>
+                    </div>
+                    <div class="therapist-rating">
+                        <span>★</span> 5.0 <span class="therapist-rating-count">(96)</span>
+                    </div>
+                </div>
+                <p class="therapist-bio">Focusing on relationship dynamics, family systems, and mindfulness-based stress reduction. Aisha guides couples and individuals toward healthy connection.</p>
+                <div class="therapist-tags">
+                    <span class="therapist-tag">Couples</span>
+                    <span class="therapist-tag">Mindfulness</span>
+                    <span class="therapist-tag">Relationships</span>
+                </div>
+                <div class="therapist-footer">
+                    <div class="therapist-availability">
+                        <span class="dot-online"></span> Available Today
+                    </div>
+                    <a href="{% url 'register_choice' %}" class="therapist-btn">Book Session</a>
+                </div>
             </div>
         </div>
     </div>
