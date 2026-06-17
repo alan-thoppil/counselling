@@ -1,5 +1,6 @@
 import os
 from pathlib import Path
+from typing import Any
 from dotenv import load_dotenv
 
 # Load environmental variables from .env file
@@ -82,10 +83,10 @@ WSGI_APPLICATION = 'counseling_app.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
-DATABASES = {
+DATABASES: dict[str, Any] = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'NAME': str(BASE_DIR / 'db.sqlite3'),
     }
 }
 
