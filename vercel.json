@@ -2,7 +2,7 @@
   "version": 2,
   "builds": [
     {
-      "src": "counseling_app/counseling_app/wsgi.py",
+      "src": "api/index.py",
       "use": "@vercel/python",
       "config": {
         "maxLambdaSize": "15mb",
@@ -24,7 +24,7 @@
     },
     {
       "src": "/(.*)",
-      "dest": "counseling_app/counseling_app/wsgi.py"
+      "dest": "api/index.py"
     }
   ]
 }
