@@ -97,23 +97,19 @@ _DATABASE_URL = os.getenv('DATABASE_URL')
 _IS_VERCEL = os.getenv('VERCEL') or os.getenv('VERCEL_ENV')
 
 if _DATABASE_URL and dj_database_url:
-    # Production: use the provided PostgreSQL (or other) DATABASE_URL
+    # Production: use the provided PostgreSQL DATABASE_URL
     DATABASES: dict[str, Any] = {
         'default': dj_database_url.config(
             default=_DATABASE_URL,
             conn_max_age=600,
             conn_health_checks=True,
+            engine='django.db.backends.postgresql',  # works with psycopg v2 or v3
         )
     }
-elif _IS_VERCEL:
-    # On Vercel without DATABASE_URL: crash loudly rather than silently using
-    # SQLite (Vercel's filesystem is ephemeral/read-only — SQLite won't work).
-    raise RuntimeError(
-        "DATABASE_URL environment variable is not set. "
-        "Add a PostgreSQL DATABASE_URL in your Vercel project's Environment Variables."
-    )
 else:
-    # Local development fallback
+    # Local dev OR Vercel build phase (collectstatic doesn't need a real DB).
+    # At runtime on Vercel without DATABASE_URL, views will raise DB errors
+    # which is the correct behaviour — the env var must be set.
     DATABASES: dict[str, Any] = {
         'default': {
             'ENGINE': 'django.db.backends.sqlite3',
