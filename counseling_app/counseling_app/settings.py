@@ -93,18 +93,33 @@ WSGI_APPLICATION = 'counseling_app.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
-DATABASES: dict[str, Any] = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': str(BASE_DIR / 'db.sqlite3'),
-    }
-}
+_DATABASE_URL = os.getenv('DATABASE_URL')
+_IS_VERCEL = os.getenv('VERCEL') or os.getenv('VERCEL_ENV')
 
-if dj_database_url and os.getenv('DATABASE_URL'):
-    DATABASES['default'] = dj_database_url.config(
-        conn_max_age=600,
-        conn_health_checks=True,
+if _DATABASE_URL and dj_database_url:
+    # Production: use the provided PostgreSQL (or other) DATABASE_URL
+    DATABASES: dict[str, Any] = {
+        'default': dj_database_url.config(
+            default=_DATABASE_URL,
+            conn_max_age=600,
+            conn_health_checks=True,
+        )
+    }
+elif _IS_VERCEL:
+    # On Vercel without DATABASE_URL: crash loudly rather than silently using
+    # SQLite (Vercel's filesystem is ephemeral/read-only — SQLite won't work).
+    raise RuntimeError(
+        "DATABASE_URL environment variable is not set. "
+        "Add a PostgreSQL DATABASE_URL in your Vercel project's Environment Variables."
     )
+else:
+    # Local development fallback
+    DATABASES: dict[str, Any] = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': str(BASE_DIR / 'db.sqlite3'),
+        }
+    }
 
 
 
@@ -144,7 +159,16 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+
+# Use STORAGES dict (Django 4.2+) instead of deprecated STATICFILES_STORAGE
+STORAGES = {
+    'default': {
+        'BACKEND': 'django.core.files.storage.FileSystemStorage',
+    },
+    'staticfiles': {
+        'BACKEND': 'whitenoise.storage.CompressedManifestStaticFilesStorage',
+    },
+}
 
 
 # Default primary key field type
@@ -206,5 +230,10 @@ if _extra_csrf:
 
 CSRF_COOKIE_HTTPONLY = False   # Allow JS to read csrf cookie (needed for AJAX)
 CSRF_COOKIE_SAMESITE = 'Lax'
+
+# Use signed-cookie sessions on Vercel to avoid needing a DB for every request.
+# On local dev, keep the default DB-backed sessions.
+if _IS_VERCEL:
+    SESSION_ENGINE = 'django.contrib.sessions.backends.signed_cookies'
 SESSION_COOKIE_SAMESITE = 'Lax'
 SESSION_SAVE_EVERY_REQUEST = False  # Avoid unnecessary session churn
