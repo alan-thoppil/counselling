@@ -1,7 +1,7 @@
 import json
 import logging
 from django.conf import settings
-from anthropic import Anthropic
+from .client import generate_llm_response
 
 logger = logging.getLogger(__name__)
 
@@ -18,7 +18,7 @@ def check_crisis(text):
             matched_keyword = kw
             break
 
-    # If no keyword matches, return early without calling Claude API
+    # If no keyword matches, return early without calling LLM API
     if not matched_keyword:
         return {
             "is_crisis": False,
@@ -26,20 +26,14 @@ def check_crisis(text):
             "confidence": "low"
         }
 
+    def get_fallback_crisis():
+        return {
+            "is_crisis": True,
+            "matched_keyword": matched_keyword,
+            "confidence": "high"
+        }
+
     try:
-        api_key = getattr(settings, 'ANTHROPIC_API_KEY', None)
-        model = getattr(settings, 'ANTHROPIC_MODEL', 'claude-sonnet-4-6')
-
-        # If API key is not configured, default to crisis=True for safety
-        if not api_key or api_key == 'your-key-here':
-            return {
-                "is_crisis": True,
-                "matched_keyword": matched_keyword,
-                "confidence": "high"
-            }
-
-        client = Anthropic(api_key=api_key)
-
         prompt = (
             f"The following user text triggered a keyword alert for crisis/self-harm. "
             f"Please verify if the context of the text indicates a real, active personal crisis, self-harm intention, or suicidal ideation.\n\n"
@@ -50,44 +44,26 @@ def check_crisis(text):
             f"Output ONLY valid raw JSON with no other formatting."
         )
 
-        response = client.messages.create(
-            model=model,
-            max_tokens=150,
-            messages=[{
-                "role": "user",
-                "content": prompt
-            }]
-        )
+        raw_text = generate_llm_response(prompt, max_tokens=150)
 
-        if response.content:
-            first_block = response.content[0]
-            raw_text = getattr(first_block, 'text', '').strip()
-            # Clean possible markdown block formatting
-            raw_text = raw_text.replace("```json", "").replace("```", "").strip()
+        if not raw_text:
+            return get_fallback_crisis()
 
-            result = json.loads(raw_text)
-            is_crisis = bool(result.get("is_crisis", False))
-            confidence = str(result.get("confidence", "medium")).lower()
-            if confidence not in ["high", "medium", "low"]:
-                confidence = "medium"
+        # Clean possible markdown block formatting
+        raw_text = raw_text.strip().replace("```json", "").replace("```", "").strip()
 
-            return {
-                "is_crisis": is_crisis,
-                "matched_keyword": matched_keyword,
-                "confidence": confidence
-            }
+        result = json.loads(raw_text)
+        is_crisis = bool(result.get("is_crisis", False))
+        confidence = str(result.get("confidence", "medium")).lower()
+        if confidence not in ["high", "medium", "low"]:
+            confidence = "medium"
 
         return {
-            "is_crisis": True,
+            "is_crisis": is_crisis,
             "matched_keyword": matched_keyword,
-            "confidence": "medium"
+            "confidence": confidence
         }
 
     except Exception as e:
         logger.error(f"Error in check_crisis AI service: {e}")
-        # Default to safe crisis trigger if error occurs
-        return {
-            "is_crisis": True,
-            "matched_keyword": matched_keyword,
-            "confidence": "high"
-        }
+        return get_fallback_crisis()

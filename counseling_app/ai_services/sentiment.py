@@ -1,7 +1,7 @@
 import json
 import logging
 from django.conf import settings
-from anthropic import Anthropic
+from .client import generate_llm_response
 
 logger = logging.getLogger(__name__)
 
@@ -11,26 +11,20 @@ def analyze_sentiment(text):
     if not text or not text.strip():
         return default_response
 
+    def get_fallback_sentiment():
+        lower_text = text.lower()
+        positive_words = ['happy', 'good', 'glad', 'wonderful', 'joy', 'excited', 'great', 'peace', 'calm', 'hope']
+        negative_words = ['sad', 'bad', 'angry', 'hurt', 'pain', 'anxious', 'scared', 'depressed', 'hate', 'cry', 'lonely']
+        pos_count = sum(1 for w in positive_words if w in lower_text)
+        neg_count = sum(1 for w in negative_words if w in lower_text)
+        
+        if pos_count > neg_count:
+            return {"sentiment": "POSITIVE", "score": round(min(0.5 + 0.1 * (pos_count - neg_count), 0.95), 2)}
+        elif neg_count > pos_count:
+            return {"sentiment": "NEGATIVE", "score": round(min(0.5 + 0.1 * (neg_count - pos_count), 0.95), 2)}
+        return default_response
+
     try:
-        api_key = getattr(settings, 'ANTHROPIC_API_KEY', None)
-        model = getattr(settings, 'ANTHROPIC_MODEL', 'claude-sonnet-4-6')
-
-        # Heuristic fallback if API key is not configured
-        if not api_key or api_key == 'your-key-here':
-            lower_text = text.lower()
-            positive_words = ['happy', 'good', 'glad', 'wonderful', 'joy', 'excited', 'great', 'peace', 'calm', 'hope']
-            negative_words = ['sad', 'bad', 'angry', 'hurt', 'pain', 'anxious', 'scared', 'depressed', 'hate', 'cry', 'lonely']
-            pos_count = sum(1 for w in positive_words if w in lower_text)
-            neg_count = sum(1 for w in negative_words if w in lower_text)
-            
-            if pos_count > neg_count:
-                return {"sentiment": "POSITIVE", "score": round(min(0.5 + 0.1 * (pos_count - neg_count), 0.95), 2)}
-            elif neg_count > pos_count:
-                return {"sentiment": "NEGATIVE", "score": round(min(0.5 + 0.1 * (neg_count - pos_count), 0.95), 2)}
-            return default_response
-
-        client = Anthropic(api_key=api_key)
-
         prompt = (
             f"Analyze the sentiment of the following journal entry text:\n\n"
             f"\"{text}\"\n\n"
@@ -40,43 +34,34 @@ def analyze_sentiment(text):
             f"Output ONLY valid raw JSON, with no other description or markdown formatting wrapper."
         )
 
-        response = client.messages.create(
-            model=model,
-            max_tokens=150,
-            messages=[{
-                "role": "user",
-                "content": prompt
-            }]
-        )
+        raw_text = generate_llm_response(prompt, max_tokens=150)
 
-        if response.content:
-            first_block = response.content[0]
-            raw_text = getattr(first_block, 'text', '').strip()
-            
-            # Clean markdown formatting if present
-            if raw_text.startswith("```"):
-                lines = raw_text.splitlines()
-                if len(lines) > 2:
-                    raw_text = "\n".join(lines[1:-1])
-            
-            # Remove any trailing code block characters
-            raw_text = raw_text.replace("```json", "").replace("```", "").strip()
+        if not raw_text:
+            return get_fallback_sentiment()
 
-            result = json.loads(raw_text)
-            sentiment = str(result.get("sentiment", "NEUTRAL")).upper()
-            if sentiment not in ["POSITIVE", "NEGATIVE", "NEUTRAL"]:
-                sentiment = "NEUTRAL"
+        raw_text = raw_text.strip()
+        # Clean markdown formatting if present
+        if raw_text.startswith("```"):
+            lines = raw_text.splitlines()
+            if len(lines) > 2:
+                raw_text = "\n".join(lines[1:-1])
+        
+        # Remove any trailing code block characters
+        raw_text = raw_text.replace("```json", "").replace("```", "").strip()
 
-            try:
-                score = float(result.get("score", 0.5))
-                score = max(0.0, min(1.0, score))
-            except (ValueError, TypeError):
-                score = 0.5
+        result = json.loads(raw_text)
+        sentiment = str(result.get("sentiment", "NEUTRAL")).upper()
+        if sentiment not in ["POSITIVE", "NEGATIVE", "NEUTRAL"]:
+            sentiment = "NEUTRAL"
 
-            return {"sentiment": sentiment, "score": round(score, 2)}
+        try:
+            score = float(result.get("score", 0.5))
+            score = max(0.0, min(1.0, score))
+        except (ValueError, TypeError):
+            score = 0.5
 
-        return default_response
+        return {"sentiment": sentiment, "score": round(score, 2)}
 
     except Exception as e:
         logger.error(f"Error in analyze_sentiment AI service: {e}")
-        return default_response
+        return get_fallback_sentiment()

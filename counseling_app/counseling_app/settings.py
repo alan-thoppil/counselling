@@ -163,6 +163,10 @@ REST_FRAMEWORK = {
 ANTHROPIC_API_KEY = os.getenv('ANTHROPIC_API_KEY', 'your-key-here')
 ANTHROPIC_MODEL = 'claude-sonnet-4-6'
 
+# NVIDIA NIM API Configuration
+NVIDIA_API_KEY = os.getenv('NVIDIA_API_KEY', 'your-key-here')
+NVIDIA_MODEL = os.getenv('NVIDIA_MODEL', 'meta/llama-3.1-70b-instruct')
+
 # Email Notification Backend for Development
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 DEFAULT_FROM_EMAIL = 'support@aura.com'

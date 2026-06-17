@@ -145,8 +145,7 @@ def crisis_logs_view(request):
 def mood_recommendation_view(request):
     try:
         from mood.models import MoodLog
-        from django.conf import settings
-        from anthropic import Anthropic
+        from .client import generate_llm_response
 
         # Fetch user's latest mood logs
         logs = MoodLog.objects.filter(user=request.user).order_by('-logged_at')[:3]
@@ -158,46 +157,38 @@ def mood_recommendation_view(request):
         latest_log = logs[0]
         score = latest_log.mood_score
         note = latest_log.note
-        
-        api_key = getattr(settings, 'ANTHROPIC_API_KEY', None)
-        model = getattr(settings, 'ANTHROPIC_MODEL', 'claude-sonnet-4-6')
-        
-        if not api_key or api_key == 'your-key-here':
-            # Fallback recommendations based on score
+
+        def get_fallback_recommendations():
             if score == 1:
-                rec = (
+                return (
                     "<b>Breathing Exercise (4-7-8 Technique)</b>: Inhale for 4 seconds, hold for 7, and exhale slowly for 8. Repeat this 4 times to calm your nervous system.<br><br>"
                     "<b>Change Your Environment</b>: Step away from screens. Take a gentle 10-minute walk or simply look out a window.<br><br>"
                     "<b>Expressive Writing</b>: Spend 5 minutes writing down what is on your mind without worrying about spelling or grammar, then discard it."
                 )
             elif score == 2:
-                rec = (
+                return (
                     "<b>Gentle Stretching</b>: Release physical tension in your neck, shoulders, and back.<br><br>"
                     "<b>Mindful Grounding</b>: Name 5 things you can see, 4 you can touch, 3 you can hear, 2 you can smell, and 1 you can taste.<br><br>"
                     "<b>Hydration Break</b>: Drink a glass of cold water mindfully, paying attention to the temperature and sensation."
                 )
             elif score == 3:
-                rec = (
+                return (
                     "<b>Listen to Music</b>: Put on a track that elevates your focus or brings comfort.<br><br>"
                     "<b>Progress Check</b>: List one small thing you completed today and celebrate it.<br><br>"
                     "<b>Social Check-in</b>: Send a quick text or check in on a close friend or family member."
                 )
             elif score == 4:
-                rec = (
+                return (
                     "<b>Gratitude Focus</b>: Write down two things you are grateful for today.<br><br>"
                     "<b>Active Movement</b>: Maintain your energy by doing a workout, run, or dancing to your favorite song.<br><br>"
                     "<b>Creative Time</b>: Dedicate 15 minutes to a hobby you enjoy, like drawing, reading, or crafting."
                 )
             else: # score == 5
-                rec = (
+                return (
                     "<b>Capture the Moment</b>: Write down what made today so wonderful so you can look back on it on tougher days.<br><br>"
                     "<b>Spread Positive Energy</b>: Complement someone, or share your high spirits with a loved one.<br><br>"
                     "<b>Set a Goal</b>: Channel your positive energy to outline one creative goal for the rest of the week."
                 )
-            return JsonResponse({'recommendation': rec})
-
-        # Anthropic integration
-        client = Anthropic(api_key=api_key)
         
         # Construct message payload
         mood_str = dict(MoodLog.MOOD_CHOICES).get(score, str(score))
@@ -215,22 +206,12 @@ def mood_recommendation_view(request):
             "Do not include introductory or concluding conversational fluff. Start directly with the recommendations."
         )
 
-        response = client.messages.create(
-            model=model,
-            max_tokens=500,
-            messages=[{
-                'role': 'user',
-                'content': prompt
-            }]
-        )
+        response_text = generate_llm_response(prompt, max_tokens=500)
 
-        recommendation_text = ""
-        if response.content:
-            recommendation_text = response.content[0].text
-        else:
-            recommendation_text = "Take a moment to rest, stay hydrated, and practice deep breathing."
-
-        return JsonResponse({'recommendation': recommendation_text})
+        if response_text:
+            return JsonResponse({'recommendation': response_text})
+        
+        return JsonResponse({'recommendation': get_fallback_recommendations()})
 
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)

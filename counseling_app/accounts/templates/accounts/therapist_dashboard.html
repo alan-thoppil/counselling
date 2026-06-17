@@ -295,6 +295,34 @@
         background: white;
         box-shadow: 0 0 10px rgba(34, 211, 238, 0.4);
     }
+
+    /* Typing indicator styling */
+    .typing-indicator {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        padding: 0.75rem 1rem;
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 12px;
+        border-bottom-left-radius: 2px;
+        max-width: 80%;
+        align-self: flex-start;
+    }
+    .typing-dot {
+        width: 6px;
+        height: 6px;
+        background-color: var(--text-muted);
+        border-radius: 50%;
+        animation: typingBounce 1.4s infinite ease-in-out both;
+        display: inline-block;
+    }
+    .typing-dot:nth-child(1) { animation-delay: -0.32s; }
+    .typing-dot:nth-child(2) { animation-delay: -0.16s; }
+    
+    @keyframes typingBounce {
+        0%, 80%, 100% { transform: scale(0); }
+        40% { transform: scale(1.0); }
+    }
 </style>
 {% endblock %}
 
@@ -827,6 +855,29 @@
             .replace(/'/g, "&#039;");
     }
 
+    function showTypingIndicator() {
+        const box = document.getElementById('chat-box');
+        removeTypingIndicator(); // Ensure no duplicates
+        
+        const div = document.createElement('div');
+        div.className = 'chat-message typing-indicator';
+        div.id = 'chat-typing-indicator';
+        div.innerHTML = `
+            <div class="typing-dot"></div>
+            <div class="typing-dot"></div>
+            <div class="typing-dot"></div>
+        `;
+        box.appendChild(div);
+        box.scrollTop = box.scrollHeight;
+    }
+
+    function removeTypingIndicator() {
+        const indicator = document.getElementById('chat-typing-indicator');
+        if (indicator) {
+            indicator.remove();
+        }
+    }
+
     // Send AI Chat Message
     function sendChatMessage() {
         const input = document.getElementById('chat-input');
@@ -836,6 +887,9 @@
         // Add user bubble
         appendChatBubble(message, 'user');
         input.value = '';
+
+        // Show typing indicator
+        showTypingIndicator();
 
         // Call API
         fetch('/api/chat/', {
@@ -851,6 +905,8 @@
         })
         .then(res => res.json())
         .then(data => {
+            removeTypingIndicator();
+
             if (data.response) {
                 appendChatBubble(data.response, 'ai');
                 // Store in local chat history
@@ -862,6 +918,7 @@
         })
         .catch(err => {
             console.error(err);
+            removeTypingIndicator();
             appendChatBubble('Unable to connect to the AI service. Please try again.', 'ai');
         });
     }
