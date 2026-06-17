@@ -34,6 +34,7 @@ class Article(models.Model):
     )
     body = models.TextField(blank=True)
     video_url = models.URLField(blank=True)
+    file = models.FileField(upload_to='resources/', blank=True, null=True)
     author = models.ForeignKey(
         User,
         on_delete=models.SET_NULL,

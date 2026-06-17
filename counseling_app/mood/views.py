@@ -88,7 +88,7 @@ def journal(request):
 
     # GET — list journal entries
     keyword = request.GET.get('search', '')
-    entries = JournalEntry.objects.filter(user=request.user)
+    entries = JournalEntry.objects.filter(user=request.user).order_by('created_at')
 
     if keyword:
         entries = entries.filter(content__icontains=keyword)

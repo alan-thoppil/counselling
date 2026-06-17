@@ -801,7 +801,7 @@
                 list.innerHTML = '<li class="history-item" style="color:var(--text-muted);">No entries saved yet.</li>';
                 return;
             }
-            data.journal_entries.reverse().forEach(entry => {
+            data.journal_entries.forEach(entry => {
                 const date = new Date(entry.created_at).toLocaleDateString();
                 const sentiment = entry.sentiment || 'neutral';
                 let badgeClass = 'badge-info';
@@ -826,6 +826,8 @@
                 `;
                 list.appendChild(li);
             });
+            // Scroll to bottom so the latest entry is visible
+            list.scrollTop = list.scrollHeight;
         })
         .catch(err => console.error(err));
     }

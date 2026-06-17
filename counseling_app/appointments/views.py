@@ -90,7 +90,9 @@ def list_appointments(request):
     if not isinstance(user, User):
         return JsonResponse({'error': 'Unauthorized'}, status=401)
     
-    if user.is_patient():
+    if user.is_superuser or user.role == 'admin':
+        appointments = Appointment.objects.all()
+    elif user.is_patient():
         appointments = Appointment.objects.filter(patient=user)
     elif user.is_therapist():
         appointments = Appointment.objects.filter(therapist=user)

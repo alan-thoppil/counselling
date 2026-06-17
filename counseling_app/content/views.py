@@ -24,6 +24,7 @@ def list_articles(request):
         'content_type': a.content_type,
         'body': a.body[:200],  # preview
         'video_url': a.video_url,
+        'file_url': a.file.url if a.file else None,
         'created_at': str(a.created_at)
     } for a in articles]
 
@@ -39,6 +40,7 @@ def article_detail(request, article_id):
         'content_type': article.content_type,
         'body': article.body,
         'video_url': article.video_url,
+        'file_url': article.file.url if article.file else None,
         'created_at': str(article.created_at)
     })
 
@@ -178,17 +180,29 @@ def create_article(request):
     if not (request.user.is_superuser or getattr(request.user, 'role', '') == 'admin'):
         return JsonResponse({'error': 'Unauthorized'}, status=403)
     try:
-        data = json.loads(request.body)
-        title = data.get('title', '').strip()
-        category_id = data.get('category_id')
-        content_type = data.get('content_type', 'article')
-        body = data.get('body', '').strip()
-        video_url = data.get('video_url', '').strip()
+        if request.POST or request.FILES:
+            title = request.POST.get('title', '').strip()
+            category_id = request.POST.get('category_id')
+            content_type = request.POST.get('content_type', 'article')
+            body = request.POST.get('body', '').strip()
+            video_url = request.POST.get('video_url', '').strip()
+            file = request.FILES.get('file')
+        else:
+            data = json.loads(request.body)
+            title = data.get('title', '').strip()
+            category_id = data.get('category_id')
+            content_type = data.get('content_type', 'article')
+            body = data.get('body', '').strip()
+            video_url = data.get('video_url', '').strip()
+            file = None
         
         if not title:
             return JsonResponse({'error': 'Title is required'}, status=400)
             
-        category = get_object_or_404(Category, id=category_id) if category_id else None
+        if category_id in ['', 'null', None]:
+            category = None
+        else:
+            category = get_object_or_404(Category, id=int(category_id))
         
         article = Article.objects.create(
             title=title,
@@ -196,6 +210,7 @@ def create_article(request):
             content_type=content_type,
             body=body,
             video_url=video_url,
+            file=file,
             author=request.user
         )
         return JsonResponse({'success': True, 'id': article.id, 'title': article.title})
@@ -210,18 +225,33 @@ def edit_article(request, article_id):
         return JsonResponse({'error': 'Unauthorized'}, status=403)
     try:
         article = get_object_or_404(Article, id=article_id)
-        data = json.loads(request.body)
-        article.title = data.get('title', article.title).strip()
-        
-        category_id = data.get('category_id')
-        if category_id:
-            article.category = get_object_or_404(Category, id=category_id)
-        else:
-            article.category = None
+        if request.POST or request.FILES:
+            article.title = request.POST.get('title', article.title).strip()
+            category_id = request.POST.get('category_id')
+            article.content_type = request.POST.get('content_type', article.content_type)
+            article.body = request.POST.get('body', article.body).strip()
+            article.video_url = request.POST.get('video_url', article.video_url).strip()
             
-        article.content_type = data.get('content_type', article.content_type)
-        article.body = data.get('body', article.body).strip()
-        article.video_url = data.get('video_url', article.video_url).strip()
+            if request.POST.get('clear_file') == 'true':
+                article.file = None
+            elif 'file' in request.FILES:
+                article.file = request.FILES.get('file')
+        else:
+            data = json.loads(request.body)
+            article.title = data.get('title', article.title).strip()
+            category_id = data.get('category_id')
+            article.content_type = data.get('content_type', article.content_type)
+            article.body = data.get('body', article.body).strip()
+            article.video_url = data.get('video_url', article.video_url).strip()
+            
+            if data.get('clear_file') is True:
+                article.file = None
+
+        if category_id in ['', 'null', None]:
+            article.category = None
+        else:
+            article.category = get_object_or_404(Category, id=int(category_id))
+            
         article.save()
         return JsonResponse({'success': True})
     except Exception as e:

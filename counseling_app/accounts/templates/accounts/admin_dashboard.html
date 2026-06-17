@@ -447,6 +447,7 @@
                         <th>Title</th>
                         <th>Type</th>
                         <th>Category</th>
+                        <th>Attachment</th>
                         <th>Created At</th>
                         <th>Action</th>
                     </tr>
@@ -490,6 +491,18 @@
                 <div class="form-group" id="video-url-group" style="display: none;">
                     <label for="res-video-url">Video / YouTube URL</label>
                     <input type="text" id="res-video-url" placeholder="https://www.youtube.com/watch?v=...">
+                </div>
+
+                <div class="form-group" id="file-group" style="display: block;">
+                    <label for="res-file">Upload Document File (PDF, DOCX, TXT, etc.)</label>
+                    <input type="file" id="res-file" accept=".pdf,.docx,.doc,.txt,.png,.jpg,.jpeg">
+                    <div id="current-file-info" style="display: none; margin-top: 0.5rem; font-size: 0.85rem; color: var(--accent);">
+                        <span>Current file: </span>
+                        <a id="current-file-link" href="#" target="_blank" style="color: var(--accent); font-weight: 600; text-decoration: underline;">view</a>
+                        <label style="display: inline-flex; align-items: center; margin-left: 1rem; font-size: 0.8rem; cursor: pointer; text-transform: none; font-weight: 500; color: var(--error); gap: 0.25rem;">
+                            <input type="checkbox" id="clear-file-checkbox" style="width: auto; height: auto; margin: 0;"> Clear current file
+                        </label>
+                    </div>
                 </div>
 
                 <div class="form-group">
@@ -573,6 +586,16 @@
 
         document.getElementById(`tab-btn-${tabName}`).classList.add('active');
         document.getElementById(`tab-content-${tabName}`).classList.add('active');
+
+        if (tabName === 'users') {
+            loadUsers();
+        } else if (tabName === 'topics') {
+            loadCategories();
+        } else if (tabName === 'content') {
+            loadResources();
+        } else if (tabName === 'bookings') {
+            loadBookings();
+        }
     }
 
     let allUsers = [];
@@ -769,14 +792,18 @@
         .catch(err => console.error(err));
     }
 
-    // Toggle Video URL Field based on selected content type
+    // Toggle Video URL Field and File Field based on selected content type
     function toggleVideoUrlField() {
         const type = document.getElementById('res-type').value;
-        const group = document.getElementById('video-url-group');
+        const videoGroup = document.getElementById('video-url-group');
+        const fileGroup = document.getElementById('file-group');
+        
         if (type === 'video') {
-            group.style.display = 'block';
+            videoGroup.style.display = 'block';
+            fileGroup.style.display = 'none';
         } else {
-            group.style.display = 'none';
+            videoGroup.style.display = 'none';
+            fileGroup.style.display = 'block';
         }
     }
 
@@ -789,7 +816,7 @@
             tbody.innerHTML = '';
             
             if (!data.articles || data.articles.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; color:var(--text-muted);">No materials uploaded.</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; color:var(--text-muted);">No materials uploaded.</td></tr>';
                 return;
             }
 
@@ -797,10 +824,20 @@
                 const tr = document.createElement('tr');
                 const date = new Date(a.created_at).toLocaleDateString();
 
+                let fileLink = '';
+                if (a.file_url) {
+                    fileLink = `<a href="${a.file_url}" target="_blank" style="color:var(--accent); font-weight:600; text-decoration:none;">📄 View File</a>`;
+                } else if (a.content_type === 'video' && a.video_url) {
+                    fileLink = `<a href="${a.video_url}" target="_blank" style="color:var(--info); font-weight:600; text-decoration:none;">🎥 Watch</a>`;
+                } else {
+                    fileLink = '<span style="color:var(--text-muted);">No File</span>';
+                }
+
                 tr.innerHTML = `
                     <td style="font-weight:600;">${a.title}</td>
                     <td><span style="font-style:italic;">${a.content_type.toUpperCase()}</span></td>
                     <td style="color:var(--accent); font-weight:500;">${a.category || 'Unassigned'}</td>
+                    <td>${fileLink}</td>
                     <td style="color:var(--text-muted); font-size:0.8rem;">${date}</td>
                     <td>
                         <div style="display:flex; gap:0.4rem;">
@@ -829,23 +866,33 @@
             return;
         }
 
-        const payload = {
-            title: title,
-            content_type: type,
-            category_id: categoryId ? parseInt(categoryId) : null,
-            body: body,
-            video_url: videoUrl
-        };
+        // Use FormData to support multipart file upload
+        const formData = new FormData();
+        formData.append('title', title);
+        formData.append('content_type', type);
+        formData.append('category_id', categoryId);
+        formData.append('body', body);
+        formData.append('video_url', videoUrl);
+
+        if (type !== 'video') {
+            const fileInput = document.getElementById('res-file');
+            if (fileInput && fileInput.files.length > 0) {
+                formData.append('file', fileInput.files[0]);
+            }
+            const clearCheckbox = document.getElementById('clear-file-checkbox');
+            if (clearCheckbox && clearCheckbox.checked) {
+                formData.append('clear_file', 'true');
+            }
+        }
 
         const endpoint = editId ? `/content/articles/edit/${editId}/` : '/content/articles/create/';
 
         fetch(endpoint, {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json',
                 'X-CSRFToken': csrfToken
             },
-            body: JSON.stringify(payload)
+            body: formData
         })
         .then(res => res.json())
         .then(data => {
@@ -878,6 +925,22 @@
             document.getElementById('res-body').value = data.body || '';
             document.getElementById('res-video-url').value = data.video_url || '';
             
+            // Display attachment details if present
+            const currentFileInfo = document.getElementById('current-file-info');
+            const currentFileLink = document.getElementById('current-file-link');
+            const clearCheckbox = document.getElementById('clear-file-checkbox');
+            
+            if (clearCheckbox) clearCheckbox.checked = false;
+            
+            if (data.file_url) {
+                currentFileLink.href = data.file_url;
+                const filename = data.file_url.substring(data.file_url.lastIndexOf('/') + 1);
+                currentFileLink.innerText = filename;
+                currentFileInfo.style.display = 'block';
+            } else {
+                currentFileInfo.style.display = 'none';
+            }
+
             // UI adjustments
             document.getElementById('resource-form-title').innerText = 'Edit Resource Details';
             document.getElementById('btn-submit-resource').innerText = 'Save Changes';
@@ -897,6 +960,14 @@
         document.getElementById('res-body').value = '';
         document.getElementById('res-video-url').value = '';
         
+        // Reset file uploads
+        const fileInput = document.getElementById('res-file');
+        if (fileInput) fileInput.value = '';
+        const currentFileInfo = document.getElementById('current-file-info');
+        if (currentFileInfo) currentFileInfo.style.display = 'none';
+        const clearCheckbox = document.getElementById('clear-file-checkbox');
+        if (clearCheckbox) clearCheckbox.checked = false;
+
         document.getElementById('resource-form-title').innerText = 'Upload Resource';
         document.getElementById('btn-submit-resource').innerText = 'Publish Resource';
         document.getElementById('btn-cancel-edit').style.display = 'none';
