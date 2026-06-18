@@ -18,4 +18,8 @@ python3 counseling_app/manage.py collectstatic --noinput --clear
 echo "Running migrations..."
 python3 counseling_app/manage.py migrate --noinput
 
+# Create admin user if environment variables are provided
+echo "Creating admin from environment..."
+python3 counseling_app/manage.py create_admin_from_env
+
 echo "=== Build complete ==="

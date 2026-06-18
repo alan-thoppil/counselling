@@ -36,6 +36,7 @@ class TherapistRegistrationForm(UserCreationForm):
         user.role = 'therapist'
         user.email = self.cleaned_data['email']
         user.phone = self.cleaned_data['phone']
+        user.is_active = False  # Start inactive until approved by admin
         if commit:
             user.save()
         return user

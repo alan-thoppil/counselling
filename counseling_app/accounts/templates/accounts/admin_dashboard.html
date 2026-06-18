@@ -625,9 +625,15 @@
             const tr = document.createElement('tr');
             const badgeRole = u.role === 'patient' ? 'badge-patient' : (u.role === 'therapist' ? 'badge-therapist' : 'badge-admin');
             const badgeStatus = u.is_active ? 'badge-active' : 'badge-inactive';
+            let badgeStatusText = u.is_active ? 'ACTIVE' : 'DEACTIVATED';
             
-            const btnClass = u.is_active ? 'btn-toggle-off' : 'btn-toggle-on';
-            const btnText = u.is_active ? 'Deactivate' : 'Activate';
+            let btnClass = u.is_active ? 'btn-toggle-off' : 'btn-toggle-on';
+            let btnText = u.is_active ? 'Deactivate' : 'Activate';
+
+            if (u.role === 'therapist' && !u.is_active) {
+                badgeStatusText = 'PENDING APPROVAL';
+                btnText = 'Approve';
+            }
 
             let enrolledBtnHtml = '';
             if (u.role === 'patient') {
@@ -641,7 +647,7 @@
                 <td>${u.email || '—'}</td>
                 <td><span class="badge ${badgeRole}">${u.role.toUpperCase()}</span></td>
                 <td>${u.phone || '—'}</td>
-                <td><span class="badge ${badgeStatus}">${u.is_active ? 'ACTIVE' : 'DEACTIVATED'}</span></td>
+                <td><span class="badge ${badgeStatus}">${badgeStatusText}</span></td>
                 <td>
                     ${enrolledBtnHtml}
                     <button class="btn-action-sm ${btnClass}" onclick="toggleUserStatus(${u.id})">${btnText}</button>

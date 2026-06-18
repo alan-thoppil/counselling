@@ -88,7 +88,7 @@ class RegistrationViewsTestCase(TestCase):
         self.assertTemplateUsed(response, 'accounts/register_therapist.html')
 
     def test_register_therapist_view_post_success(self):
-        """Test therapist registration is successful and redirects to therapist dashboard"""
+        """Test therapist registration is successful and redirects to login page as inactive"""
         url = reverse('register_therapist')
         data = {
             'username': 'newtherapist',
@@ -101,16 +101,35 @@ class RegistrationViewsTestCase(TestCase):
         }
         response = self.client.post(url, data)
         self.assertEqual(response.status_code, 302)
-        self.assertRedirects(response, reverse('therapist_dashboard'))
+        self.assertRedirects(response, reverse('login'))
         
-        # Verify user and profile exist
+        # Verify user and profile exist and user is inactive (pending approval)
         user = User.objects.get(username='newtherapist')
         self.assertEqual(user.role, 'therapist')
         self.assertEqual(user.phone, '0987654321')
+        self.assertFalse(user.is_active)
         
         profile = TherapistProfile.objects.get(user=user)
         self.assertEqual(profile.specialisation, 'CBT & Mindfulness')
         self.assertEqual(profile.bio, 'Licensed clinical psychologist with 5 years experience.')
+
+    def test_login_inactive_therapist_fails(self):
+        """Test that an inactive therapist cannot log in and gets a custom error message"""
+        # Create an inactive therapist
+        User.objects.create_user(
+            username='inactive_therapist',
+            password='Password123!',
+            role='therapist',
+            is_active=False
+        )
+        url = reverse('login')
+        data = {
+            'username': 'inactive_therapist',
+            'password': 'Password123!'
+        }
+        response = self.client.post(url, data)
+        self.assertEqual(response.status_code, 200)
+        self.assertFormError(response.context['form'], None, "Your therapist account is pending administrator approval.")
 
 
 class AuthViewsTestCase(TestCase):

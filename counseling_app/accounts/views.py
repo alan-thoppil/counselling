@@ -33,9 +33,9 @@ def register_therapist(request):
                 specialisation=form.cleaned_data.get('specialisation', ''),
                 bio=form.cleaned_data.get('bio', '')
             )
-            login(request, user)
-            messages.success(request, 'Therapist account created!')
-            return redirect('therapist_dashboard')
+            # Do not log in the therapist immediately since they are inactive (is_active = False)
+            messages.success(request, 'Registration successful! Your therapist account is pending administrator approval.')
+            return redirect('login')
     else:
         form = TherapistRegistrationForm()
     return render(request, 'accounts/register_therapist.html', {'form': form})
@@ -73,6 +73,16 @@ def login_view(request):
             else:
                 messages.success(request, 'Welcome back!')
                 return redirect('/admin/')
+        else:
+            # Custom message if a therapist tries to log in but their account is inactive (pending approval)
+            username = request.POST.get('username')
+            try:
+                user = User.objects.get(username=username)
+                if not user.is_active and user.role == 'therapist':
+                    form.errors.pop('__all__', None)
+                    form.add_error(None, "Your therapist account is pending administrator approval.")
+            except User.DoesNotExist:
+                pass
     else:
         form = AuthenticationForm()
     return render(request, 'accounts/login.html', {'form': form})
