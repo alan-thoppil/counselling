@@ -30,7 +30,7 @@
                         {% endfor %}
                     </ul>
                 {% endif %}
-                {% if field.help_text %}
+                {% if field.help_text and 'password' not in field.name %}
                     <p class="form-help">{{ field.help_text|safe }}</p>
                 {% endif %}
             </div>

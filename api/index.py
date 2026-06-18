@@ -25,5 +25,12 @@ os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'counseling_app.settings')
 from django.core.wsgi import get_wsgi_application   # noqa: E402
 application = get_wsgi_application()
 
+# Run admin creation at runtime to ensure Vercel environment variables are loaded
+try:
+    from django.core.management import call_command
+    call_command('create_admin_from_env')
+except Exception as e:
+    print("Runtime admin creation warning:", e)
+
 # Vercel looks for a variable named `app`
 app = application
