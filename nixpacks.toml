@@ -1,0 +1,2 @@
+[phases.build]
+cmds = ["...", "python counseling_app/manage.py collectstatic --noinput"]
