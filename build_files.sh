@@ -14,4 +14,8 @@ export DJANGO_SETTINGS_MODULE="counseling_app.settings"
 echo "Running collectstatic..."
 python3 counseling_app/manage.py collectstatic --noinput --clear
 
+# Run database migrations
+echo "Running migrations..."
+python3 counseling_app/manage.py migrate --noinput
+
 echo "=== Build complete ==="
