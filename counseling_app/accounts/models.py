@@ -17,6 +17,11 @@ class User(AbstractUser):
     def is_therapist(self):
         return self.role == 'therapist'
 
+    def save(self, *args, **kwargs):
+        if self.is_superuser:
+            self.role = 'admin'
+        super().save(*args, **kwargs)
+
 
 class PatientProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='patient_profile')
