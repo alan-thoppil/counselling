@@ -241,3 +241,29 @@ def index(request):
                 return redirect('therapist_dashboard')
         return redirect('/admin/')
     return render(request, 'accounts/index.html')
+
+@login_required
+def change_password(request):
+    if request.method != 'POST':
+        return JsonResponse({'success': False, 'error': 'Method not allowed.'}, status=405)
+    
+    try:
+        import json
+        data = json.loads(request.body)
+    except json.JSONDecodeError:
+        return JsonResponse({'success': False, 'error': 'Invalid request content.'}, status=400)
+    
+    from django.contrib.auth.forms import PasswordChangeForm
+    from django.contrib.auth import update_session_auth_hash
+    
+    form = PasswordChangeForm(user=request.user, data=data)
+    if form.is_valid():
+        user = form.save()
+        update_session_auth_hash(request, user)
+        return JsonResponse({'success': True, 'message': 'Your password has been changed successfully!'})
+    else:
+        errors = []
+        for field, error_list in form.errors.items():
+            for error in error_list:
+                errors.append(error)
+        return JsonResponse({'success': False, 'error': ' '.join(errors)})

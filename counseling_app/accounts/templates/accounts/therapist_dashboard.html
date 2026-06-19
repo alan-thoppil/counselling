@@ -340,6 +340,7 @@
         <span id="crisis-badge" class="badge-tab" style="display: none;">0</span>
     </button>
     <button id="tab-btn-chat" class="tab-btn" onclick="switchTab('chat')">MindWell Support Chat</button>
+    <button id="tab-btn-security" class="tab-btn" onclick="switchTab('security')">Security</button>
 </div>
 
 <!-- Tab Content: Clinical Workspace -->
@@ -442,6 +443,29 @@
     </div>
 </div>
 
+<!-- Tab Content: Security (Change Password) -->
+<div id="tab-content-security" class="tab-content">
+    <div class="widget" style="max-width: 500px; margin: 0 auto;">
+        <h2 class="widget-title">Change Password</h2>
+        <form id="therapist-change-password-form" onsubmit="handleChangePassword(event, 'therapist')">
+            <div class="form-group">
+                <label for="therapist-old-pass">Current Password</label>
+                <input type="password" id="therapist-old-pass" name="old_password" required placeholder="Enter current password">
+            </div>
+            <div class="form-group">
+                <label for="therapist-new-pass1">New Password</label>
+                <input type="password" id="therapist-new-pass1" name="new_password1" required placeholder="Enter new password">
+            </div>
+            <div class="form-group">
+                <label for="therapist-new-pass2">Confirm New Password</label>
+                <input type="password" id="therapist-new-pass2" name="new_password2" required placeholder="Confirm new password">
+            </div>
+            <button type="submit" class="btn-submit" style="margin-top: 1.5rem; width: 100%;">Update Password</button>
+            <div id="therapist-pass-msg" style="margin-top: 1rem; font-weight: 600; font-size: 0.9rem; text-align: center;"></div>
+        </form>
+    </div>
+</div>
+
 <script>
     const csrfToken = '{{ csrf_token }}';
     let currentAppointmentId = null;
@@ -470,6 +494,9 @@
         } else if (tabName === 'chat') {
             document.getElementById('tab-btn-chat').classList.add('active');
             document.getElementById('tab-content-chat').classList.add('active');
+        } else if (tabName === 'security') {
+            document.getElementById('tab-btn-security').classList.add('active');
+            document.getElementById('tab-content-security').classList.add('active');
         }
     }
 
@@ -1003,6 +1030,46 @@
             }
         })
         .catch(err => console.error(err));
+    }
+
+    function handleChangePassword(event, rolePrefix) {
+        event.preventDefault();
+        const oldPassword = document.getElementById(`${rolePrefix}-old-pass`).value;
+        const newPassword1 = document.getElementById(`${rolePrefix}-new-pass1`).value;
+        const newPassword2 = document.getElementById(`${rolePrefix}-new-pass2`).value;
+        const msgDiv = document.getElementById(`${rolePrefix}-pass-msg`);
+        
+        msgDiv.innerText = 'Updating password...';
+        msgDiv.style.color = 'var(--accent)';
+        
+        fetch('/accounts/change-password/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrfToken
+            },
+            body: JSON.stringify({
+                old_password: oldPassword,
+                new_password1: newPassword1,
+                new_password2: newPassword2
+            })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                msgDiv.innerText = data.message;
+                msgDiv.style.color = 'var(--success)';
+                document.getElementById(`${rolePrefix}-change-password-form`).reset();
+            } else {
+                msgDiv.innerText = data.error;
+                msgDiv.style.color = 'var(--error)';
+            }
+        })
+        .catch(err => {
+            console.error(err);
+            msgDiv.innerText = 'An error occurred. Please try again.';
+            msgDiv.style.color = 'var(--error)';
+        });
     }
 </script>
 {% endblock %}

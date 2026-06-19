@@ -330,6 +330,7 @@
     <button id="tab-btn-topics" class="tab-btn" onclick="switchTab('topics')">Topics & Categories</button>
     <button id="tab-btn-content" class="tab-btn" onclick="switchTab('content')">Educational Resources</button>
     <button id="tab-btn-bookings" class="tab-btn" onclick="switchTab('bookings')">Bookings</button>
+    <button id="tab-btn-security" class="tab-btn" onclick="switchTab('security')">Security</button>
 </div>
 
 <!-- 1. OVERVIEW TAB -->
@@ -540,6 +541,29 @@
                 </tr>
             </tbody>
         </table>
+    </div>
+</div>
+
+<!-- 6. SECURITY TAB -->
+<div id="tab-content-security" class="tab-content">
+    <div class="admin-box" style="max-width: 500px; margin: 0 auto;">
+        <h3 class="admin-box-title">Change Password</h3>
+        <form id="admin-change-password-form" onsubmit="handleChangePassword(event, 'admin')">
+            <div class="form-group">
+                <label for="admin-old-pass">Current Password</label>
+                <input type="password" id="admin-old-pass" name="old_password" required placeholder="Enter current password">
+            </div>
+            <div class="form-group">
+                <label for="admin-new-pass1">New Password</label>
+                <input type="password" id="admin-new-pass1" name="new_password1" required placeholder="Enter new password">
+            </div>
+            <div class="form-group">
+                <label for="admin-new-pass2">Confirm New Password</label>
+                <input type="password" id="admin-new-pass2" name="new_password2" required placeholder="Confirm new password">
+            </div>
+            <button type="submit" class="btn-submit" style="margin-top: 1.5rem; width: 100%;">Update Password</button>
+            <div id="admin-pass-msg" style="margin-top: 1rem; font-weight: 600; font-size: 0.9rem; text-align: center;"></div>
+        </form>
     </div>
 </div>
 
@@ -1114,6 +1138,46 @@
         if (event.target.id === 'enrolled-modal') {
             closeEnrolledModal();
         }
+    }
+
+    function handleChangePassword(event, rolePrefix) {
+        event.preventDefault();
+        const oldPassword = document.getElementById(`${rolePrefix}-old-pass`).value;
+        const newPassword1 = document.getElementById(`${rolePrefix}-new-pass1`).value;
+        const newPassword2 = document.getElementById(`${rolePrefix}-new-pass2`).value;
+        const msgDiv = document.getElementById(`${rolePrefix}-pass-msg`);
+        
+        msgDiv.innerText = 'Updating password...';
+        msgDiv.style.color = 'var(--accent)';
+        
+        fetch('/accounts/change-password/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrfToken
+            },
+            body: JSON.stringify({
+                old_password: oldPassword,
+                new_password1: newPassword1,
+                new_password2: newPassword2
+            })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                msgDiv.innerText = data.message;
+                msgDiv.style.color = 'var(--success)';
+                document.getElementById(`${rolePrefix}-change-password-form`).reset();
+            } else {
+                msgDiv.innerText = data.error;
+                msgDiv.style.color = 'var(--error)';
+            }
+        })
+        .catch(err => {
+            console.error(err);
+            msgDiv.innerText = 'An error occurred. Please try again.';
+            msgDiv.style.color = 'var(--error)';
+        });
     }
 </script>
 {% endblock %}

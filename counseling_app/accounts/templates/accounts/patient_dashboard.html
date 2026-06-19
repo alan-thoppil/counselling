@@ -564,6 +564,22 @@
         color: #1e293b !important;
     }
 
+    /* Glassmorphic Modal */
+    .modal-backdrop {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(10, 5, 24, 0.75);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        display: none;
+        justify-content: center;
+        align-items: center;
+        z-index: 1000;
+    }
+
     main {
         max-width: 1200px !important;
         width: 100% !important;
@@ -599,12 +615,17 @@
         <h1 style="font-family:'Outfit', sans-serif; font-size:2rem; font-weight:800; color:#1e293b; margin:0;">Hello, {{ user.username }} 👋</h1>
         <p style="color:#64748b; font-size:0.95rem; margin-top:0.25rem;">Here's your overview for today</p>
     </div>
-    <form action="{% url 'logout' %}" method="post" style="display:inline; margin:0; padding:0; gap:0;">
-        {% csrf_token %}
-        <button type="submit" class="btn-submit" style="margin:0; padding:0.6rem 1.25rem; border-radius:9999px; background:#7c3aed; display:flex; align-items:center; gap:0.5rem; border:none; color:white; font-weight:600; cursor:pointer;">
-            <span>Logout</span>
+    <div style="display:flex; gap:0.5rem; align-items:center;">
+        <button onclick="openPasswordModal()" class="btn-submit" style="margin:0; padding:0.6rem 1.25rem; border-radius:9999px; background:rgba(124, 58, 237, 0.1); border:1px solid #7c3aed; color:#7c3aed; font-weight:600; cursor:pointer; display:flex; align-items:center; gap:0.5rem;">
+            <span>🔐 Change Password</span>
         </button>
-    </form>
+        <form action="{% url 'logout' %}" method="post" style="display:inline; margin:0; padding:0; gap:0;">
+            {% csrf_token %}
+            <button type="submit" class="btn-submit" style="margin:0; padding:0.6rem 1.25rem; border-radius:9999px; background:#7c3aed; display:flex; align-items:center; gap:0.5rem; border:none; color:white; font-weight:600; cursor:pointer;">
+                <span>Logout</span>
+            </button>
+        </form>
+    </div>
 </div>
 
 <!-- 4 Stats Cards Grid at the top -->
@@ -855,6 +876,32 @@
                 </ul>
             </div>
         </div>
+    </div>
+</div>
+
+<!-- Change Password Modal -->
+<div id="password-modal" class="modal-backdrop" onclick="handlePasswordBackdropClick(event)">
+    <div class="modal-container" style="background: #ffffff; border: 1px solid #cbd5e1; border-radius: 12px; padding: 2rem; width: 90%; max-width: 450px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); position: relative; margin: auto;">
+        <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e2e8f0; padding-bottom: 1rem; margin-bottom: 1.5rem;">
+            <h3 class="modal-title" style="font-family: 'Outfit', sans-serif; font-size: 1.35rem; font-weight: 700; color: #1e293b;">🔐 Change Password</h3>
+            <button class="modal-close-btn" onclick="closePasswordModal()" style="background: none; border: none; color: #64748b; font-size: 1.75rem; cursor: pointer; line-height: 1;">&times;</button>
+        </div>
+        <form id="patient-change-password-form" onsubmit="handleChangePassword(event, 'patient')">
+            <div class="form-group" style="margin-bottom: 1rem;">
+                <label for="patient-old-pass">Current Password</label>
+                <input type="password" id="patient-old-pass" name="old_password" required placeholder="Enter current password">
+            </div>
+            <div class="form-group" style="margin-bottom: 1rem;">
+                <label for="patient-new-pass1">New Password</label>
+                <input type="password" id="patient-new-pass1" name="new_password1" required placeholder="Enter new password">
+            </div>
+            <div class="form-group" style="margin-bottom: 1.5rem;">
+                <label for="patient-new-pass2">Confirm New Password</label>
+                <input type="password" id="patient-new-pass2" name="new_password2" required placeholder="Confirm new password">
+            </div>
+            <button type="submit" class="btn-submit" style="width: 100%; margin: 0; padding: 0.75rem; border-radius: 8px;">Update Password</button>
+            <div id="patient-pass-msg" style="margin-top: 1rem; font-weight: 600; font-size: 0.9rem; text-align: center;"></div>
+        </form>
     </div>
 </div>
 
@@ -1374,6 +1421,65 @@
             input.value = msg;
             sendChatMessage();
         }
+    }
+
+    // Modal Control Functions
+    function openPasswordModal() {
+        const modal = document.getElementById('password-modal');
+        modal.style.display = 'flex';
+    }
+
+    function closePasswordModal() {
+        const modal = document.getElementById('password-modal');
+        modal.style.display = 'none';
+        document.getElementById('patient-change-password-form').reset();
+        document.getElementById('patient-pass-msg').innerText = '';
+    }
+
+    function handlePasswordBackdropClick(event) {
+        if (event.target === document.getElementById('password-modal')) {
+            closePasswordModal();
+        }
+    }
+
+    function handleChangePassword(event, rolePrefix) {
+        event.preventDefault();
+        const oldPassword = document.getElementById(`${rolePrefix}-old-pass`).value;
+        const newPassword1 = document.getElementById(`${rolePrefix}-new-pass1`).value;
+        const newPassword2 = document.getElementById(`${rolePrefix}-new-pass2`).value;
+        const msgDiv = document.getElementById(`${rolePrefix}-pass-msg`);
+        
+        msgDiv.innerText = 'Updating password...';
+        msgDiv.style.color = 'var(--accent)';
+        
+        fetch('/accounts/change-password/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrfToken
+            },
+            body: JSON.stringify({
+                old_password: oldPassword,
+                new_password1: newPassword1,
+                new_password2: newPassword2
+            })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                msgDiv.innerText = data.message;
+                msgDiv.style.color = 'var(--success)';
+                document.getElementById(`${rolePrefix}-change-password-form`).reset();
+            } else {
+                msgDiv.innerText = data.error;
+                msgDiv.style.color = 'var(--error)';
+            }
+        })
+        .catch(err => {
+            console.error(err);
+            msgDiv.innerText = 'An error occurred. Please try again.';
+            msgDiv.style.color = 'var(--error)';
+        });
     }
 </script>
 {% endblock %}

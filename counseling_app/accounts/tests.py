@@ -260,3 +260,77 @@ class AdminEnrolledUsersTestCase(TestCase):
         self.assertEqual(data['enrolled'][0]['specialisation'], 'Psychotherapy')
         self.assertEqual(data['enrolled'][0]['booking_count'], 1)
 
+
+
+
+class ChangePasswordViewsTestCase(TestCase):
+    def setUp(self):
+        self.client = Client()
+        self.user = User.objects.create_user(
+            username='change_test_user',
+            password='CurrentSecurePass123!',
+            role='patient'
+        )
+
+    def test_change_password_anonymous_denied(self):
+        """Test that unauthenticated user cannot access change password endpoint"""
+        url = reverse('change_password')
+        response = self.client.post(url, data={}, content_type='application/json')
+        # Django login_required decorator redirects anonymous users to login page (302)
+        self.assertEqual(response.status_code, 302)
+
+    def test_change_password_get_not_allowed(self):
+        """Test GET request to change password endpoint is rejected"""
+        self.client.login(username='change_test_user', password='CurrentSecurePass123!')
+        url = reverse('change_password')
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 405)
+
+    def test_change_password_success(self):
+        """Test user can successfully change password with valid current and new password"""
+        self.client.login(username='change_test_user', password='CurrentSecurePass123!')
+        url = reverse('change_password')
+        data = {
+            'old_password': 'CurrentSecurePass123!',
+            'new_password1': 'NewSecurePass999!',
+            'new_password2': 'NewSecurePass999!'
+        }
+        response = self.client.post(url, data=data, content_type='application/json')
+        self.assertEqual(response.status_code, 200)
+        res_data = response.json()
+        self.assertTrue(res_data['success'])
+        self.assertEqual(res_data['message'], 'Your password has been changed successfully!')
+        
+        # Verify the password actually changed
+        self.client.logout()
+        login_success = self.client.login(username='change_test_user', password='NewSecurePass999!')
+        self.assertTrue(login_success)
+
+    def test_change_password_incorrect_old_password(self):
+        """Test password change fails if the current password is wrong"""
+        self.client.login(username='change_test_user', password='CurrentSecurePass123!')
+        url = reverse('change_password')
+        data = {
+            'old_password': 'WrongCurrentPass!',
+            'new_password1': 'NewSecurePass999!',
+            'new_password2': 'NewSecurePass999!'
+        }
+        response = self.client.post(url, data=data, content_type='application/json')
+        self.assertEqual(response.status_code, 200)
+        res_data = response.json()
+        self.assertFalse(res_data['success'])
+        self.assertIn('error', res_data)
+
+    def test_change_password_mismatched_new_passwords(self):
+        """Test password change fails if new passwords do not match"""
+        self.client.login(username='change_test_user', password='CurrentSecurePass123!')
+        url = reverse('change_password')
+        data = {
+            'old_password': 'CurrentSecurePass123!',
+            'new_password1': 'NewSecurePass1!',
+            'new_password2': 'NewSecurePass2!'
+        }
+        response = self.client.post(url, data=data, content_type='application/json')
+        self.assertEqual(response.status_code, 200)
+        res_data = response.json()
+        self.assertFalse(res_data['success'])
