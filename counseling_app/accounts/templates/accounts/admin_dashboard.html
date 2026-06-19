@@ -551,15 +551,24 @@
         <form id="admin-change-password-form" onsubmit="handleChangePassword(event, 'admin')">
             <div class="form-group">
                 <label for="admin-old-pass">Current Password</label>
-                <input type="password" id="admin-old-pass" name="old_password" required placeholder="Enter current password">
+                <div style="position: relative; width: 100%;">
+                    <input type="password" id="admin-old-pass" name="old_password" required placeholder="Enter current password" style="padding-right: 2.75rem;">
+                    <button type="button" onclick="togglePasswordVisibility('admin-old-pass')" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; font-size: 0.85rem; font-weight: 600; color: var(--accent); padding: 0.25rem;">Show</button>
+                </div>
             </div>
             <div class="form-group">
                 <label for="admin-new-pass1">New Password</label>
-                <input type="password" id="admin-new-pass1" name="new_password1" required placeholder="Enter new password">
+                <div style="position: relative; width: 100%;">
+                    <input type="password" id="admin-new-pass1" name="new_password1" required placeholder="Enter new password" style="padding-right: 2.75rem;">
+                    <button type="button" onclick="togglePasswordVisibility('admin-new-pass1')" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; font-size: 0.85rem; font-weight: 600; color: var(--accent); padding: 0.25rem;">Show</button>
+                </div>
             </div>
             <div class="form-group">
                 <label for="admin-new-pass2">Confirm New Password</label>
-                <input type="password" id="admin-new-pass2" name="new_password2" required placeholder="Confirm new password">
+                <div style="position: relative; width: 100%;">
+                    <input type="password" id="admin-new-pass2" name="new_password2" required placeholder="Confirm new password" style="padding-right: 2.75rem;">
+                    <button type="button" onclick="togglePasswordVisibility('admin-new-pass2')" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; font-size: 0.85rem; font-weight: 600; color: var(--accent); padding: 0.25rem;">Show</button>
+                </div>
             </div>
             <button type="submit" class="btn-submit" style="margin-top: 1.5rem; width: 100%;">Update Password</button>
             <div id="admin-pass-msg" style="margin-top: 1rem; font-weight: 600; font-size: 0.9rem; text-align: center;"></div>
@@ -1178,6 +1187,18 @@
             msgDiv.innerText = 'An error occurred. Please try again.';
             msgDiv.style.color = 'var(--error)';
         });
+    }
+
+    function togglePasswordVisibility(inputId) {
+        const input = document.getElementById(inputId);
+        const btn = input.nextElementSibling;
+        if (input.type === 'password') {
+            input.type = 'text';
+            btn.innerText = 'Hide';
+        } else {
+            input.type = 'password';
+            btn.innerText = 'Show';
+        }
     }
 </script>
 {% endblock %}

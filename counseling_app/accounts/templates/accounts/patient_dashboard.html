@@ -617,7 +617,7 @@
     </div>
     <div style="display:flex; gap:0.5rem; align-items:center;">
         <button onclick="openPasswordModal()" class="btn-submit" style="margin:0; padding:0.6rem 1.25rem; border-radius:9999px; background:rgba(124, 58, 237, 0.1); border:1px solid #7c3aed; color:#7c3aed; font-weight:600; cursor:pointer; display:flex; align-items:center; gap:0.5rem;">
-            <span>🔐 Change Password</span>
+            <span>Change Password</span>
         </button>
         <form action="{% url 'logout' %}" method="post" style="display:inline; margin:0; padding:0; gap:0;">
             {% csrf_token %}
@@ -883,21 +883,30 @@
 <div id="password-modal" class="modal-backdrop" onclick="handlePasswordBackdropClick(event)">
     <div class="modal-container" style="background: #ffffff; border: 1px solid #cbd5e1; border-radius: 12px; padding: 2rem; width: 90%; max-width: 450px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); position: relative; margin: auto;">
         <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e2e8f0; padding-bottom: 1rem; margin-bottom: 1.5rem;">
-            <h3 class="modal-title" style="font-family: 'Outfit', sans-serif; font-size: 1.35rem; font-weight: 700; color: #1e293b;">🔐 Change Password</h3>
+            <h3 class="modal-title" style="font-family: 'Outfit', sans-serif; font-size: 1.35rem; font-weight: 700; color: #1e293b;">Change Password</h3>
             <button class="modal-close-btn" onclick="closePasswordModal()" style="background: none; border: none; color: #64748b; font-size: 1.75rem; cursor: pointer; line-height: 1;">&times;</button>
         </div>
         <form id="patient-change-password-form" onsubmit="handleChangePassword(event, 'patient')">
             <div class="form-group" style="margin-bottom: 1rem;">
                 <label for="patient-old-pass">Current Password</label>
-                <input type="password" id="patient-old-pass" name="old_password" required placeholder="Enter current password">
+                <div style="position: relative; width: 100%;">
+                    <input type="password" id="patient-old-pass" name="old_password" required placeholder="Enter current password" style="padding-right: 2.75rem;">
+                    <button type="button" onclick="togglePasswordVisibility('patient-old-pass')" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; font-size: 0.85rem; font-weight: 600; color: #7c3aed; padding: 0.25rem;">Show</button>
+                </div>
             </div>
             <div class="form-group" style="margin-bottom: 1rem;">
                 <label for="patient-new-pass1">New Password</label>
-                <input type="password" id="patient-new-pass1" name="new_password1" required placeholder="Enter new password">
+                <div style="position: relative; width: 100%;">
+                    <input type="password" id="patient-new-pass1" name="new_password1" required placeholder="Enter new password" style="padding-right: 2.75rem;">
+                    <button type="button" onclick="togglePasswordVisibility('patient-new-pass1')" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; font-size: 0.85rem; font-weight: 600; color: #7c3aed; padding: 0.25rem;">Show</button>
+                </div>
             </div>
             <div class="form-group" style="margin-bottom: 1.5rem;">
                 <label for="patient-new-pass2">Confirm New Password</label>
-                <input type="password" id="patient-new-pass2" name="new_password2" required placeholder="Confirm new password">
+                <div style="position: relative; width: 100%;">
+                    <input type="password" id="patient-new-pass2" name="new_password2" required placeholder="Confirm new password" style="padding-right: 2.75rem;">
+                    <button type="button" onclick="togglePasswordVisibility('patient-new-pass2')" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; font-size: 0.85rem; font-weight: 600; color: #7c3aed; padding: 0.25rem;">Show</button>
+                </div>
             </div>
             <button type="submit" class="btn-submit" style="width: 100%; margin: 0; padding: 0.75rem; border-radius: 8px;">Update Password</button>
             <div id="patient-pass-msg" style="margin-top: 1rem; font-weight: 600; font-size: 0.9rem; text-align: center;"></div>
@@ -1480,6 +1489,18 @@
             msgDiv.innerText = 'An error occurred. Please try again.';
             msgDiv.style.color = 'var(--error)';
         });
+    }
+
+    function togglePasswordVisibility(inputId) {
+        const input = document.getElementById(inputId);
+        const btn = input.nextElementSibling;
+        if (input.type === 'password') {
+            input.type = 'text';
+            btn.innerText = 'Hide';
+        } else {
+            input.type = 'password';
+            btn.innerText = 'Show';
+        }
     }
 </script>
 {% endblock %}
