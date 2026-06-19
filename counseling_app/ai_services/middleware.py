@@ -28,6 +28,10 @@ class CrisisDetectionMiddleware(MiddlewareMixin):
                         # Fetch request user if authenticated
                         user = request.user if request.user and request.user.is_authenticated else None
                         
+                        # Skip logging if request is by a therapist, admin, or superuser
+                        if user and (user.is_superuser or getattr(user, 'role', '') in ['therapist', 'admin']):
+                            return None
+                        
                         # Store a preview/snippet of the request body (up to 500 characters)
                         text_snippet = body_str[:500]
                         

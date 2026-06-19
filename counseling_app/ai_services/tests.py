@@ -127,3 +127,69 @@ class CrisisLogsAPITestCase(TestCase):
         )
         self.assertEqual(response.status_code, 400)
         self.assertEqual(response.json(), {'error': 'Log ID is required.'})
+
+
+
+class CrisisDetectionMiddlewareTestCase(TestCase):
+    def setUp(self):
+        self.client = Client()
+        self.patient = User.objects.create_user(
+            username='patient_user',
+            password='Password123!',
+            role='patient'
+        )
+        self.therapist = User.objects.create_user(
+            username='therapist_user',
+            password='Password123!',
+            role='therapist'
+        )
+        self.admin = User.objects.create_user(
+            username='admin_user',
+            password='Password123!',
+            role='admin'
+        )
+
+    def test_anonymous_user_trigger_logs_crisis(self):
+        """Test that a POST request by an anonymous user containing a keyword logs a crisis"""
+        initial_count = CrisisLog.objects.count()
+        self.client.post(
+            reverse('login'),
+            data={'username': 'suicide', 'password': 'somepassword'}
+        )
+        self.assertEqual(CrisisLog.objects.count(), initial_count + 1)
+        log = CrisisLog.objects.last()
+        self.assertIsNone(log.user)
+        self.assertEqual(log.detected_keyword, 'suicide')
+
+    def test_patient_user_trigger_logs_crisis(self):
+        """Test that a POST request by a patient user containing a keyword logs a crisis"""
+        self.client.login(username='patient_user', password='Password123!')
+        initial_count = CrisisLog.objects.count()
+        self.client.post(
+            reverse('login'),
+            data={'username': 'some_username', 'comment': 'no reason to live anymore'}
+        )
+        self.assertEqual(CrisisLog.objects.count(), initial_count + 1)
+        log = CrisisLog.objects.last()
+        self.assertEqual(log.user, self.patient)
+        self.assertEqual(log.detected_keyword, 'no reason to live')
+
+    def test_therapist_user_trigger_does_not_log_crisis(self):
+        """Test that a POST request by a therapist containing a keyword is NOT logged"""
+        self.client.login(username='therapist_user', password='Password123!')
+        initial_count = CrisisLog.objects.count()
+        self.client.post(
+            reverse('login'),
+            data={'username': 'some_username', 'comment': 'no reason to live anymore'}
+        )
+        self.assertEqual(CrisisLog.objects.count(), initial_count)
+
+    def test_admin_user_trigger_does_not_log_crisis(self):
+        """Test that a POST request by an admin containing a keyword is NOT logged"""
+        self.client.login(username='admin_user', password='Password123!')
+        initial_count = CrisisLog.objects.count()
+        self.client.post(
+            reverse('login'),
+            data={'username': 'some_username', 'comment': 'no reason to live anymore'}
+        )
+        self.assertEqual(CrisisLog.objects.count(), initial_count)
