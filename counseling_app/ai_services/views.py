@@ -1,5 +1,5 @@
 import json
-from django.http import JsonResponse
+from django.http import JsonResponse, StreamingHttpResponse
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_POST
 
@@ -22,8 +22,19 @@ def chat_view(request):
         if not message:
             return JsonResponse({'error': 'Message is required.'}, status=400)
 
-        response_text = get_chatbot_response(message, history)
-        return JsonResponse({'response': response_text})
+        def event_stream():
+            try:
+                from .chatbot import get_chatbot_stream
+                for chunk in get_chatbot_stream(message, history):
+                    yield f"data: {json.dumps({'text': chunk})}\n\n"
+            except Exception as e:
+                yield f"data: {json.dumps({'error': str(e)})}\n\n"
+            finally:
+                yield "data: [DONE]\n\n"
+
+        response = StreamingHttpResponse(event_stream(), content_type='text/event-stream')
+        response['Cache-Control'] = 'no-cache'
+        return response
 
     except json.JSONDecodeError:
         return JsonResponse({'error': 'Invalid JSON body.'}, status=400)

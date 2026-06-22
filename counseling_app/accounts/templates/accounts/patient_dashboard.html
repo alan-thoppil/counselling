@@ -1369,7 +1369,7 @@
     }
 
     // Send AI Chat Message
-    function sendChatMessage() {
+    async function sendChatMessage() {
         const input = document.getElementById('chat-input');
         const message = input.value.trim();
         if (!message) return;
@@ -1381,36 +1381,83 @@
         // Show typing indicator
         showTypingIndicator();
 
-        // Call API
-        fetch('/api/chat/', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFToken': csrfToken
-            },
-            body: JSON.stringify({
-                message: message,
-                history: chatHistory
-            })
-        })
-        .then(res => res.json())
-        .then(data => {
+        try {
+            // Call API
+            const response = await fetch('/api/chat/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrfToken
+                },
+                body: JSON.stringify({
+                    message: message,
+                    history: chatHistory
+                })
+            });
+
             removeTypingIndicator();
 
-            if (data.response) {
-                appendChatBubble(data.response, 'ai');
+            if (!response.ok) {
+                appendChatBubble('Sorry, I encountered an error checking your request.', 'ai');
+                return;
+            }
+
+            // Read the stream
+            const reader = response.body.getReader();
+            const decoder = new TextDecoder();
+            let done = false;
+            let accumulatedResponse = "";
+            let aiBubble = null;
+            const box = document.getElementById('chat-box');
+
+            while (!done) {
+                const { value, done: readerDone } = await reader.read();
+                done = readerDone;
+                const chunk = decoder.decode(value, { stream: !done });
+                
+                // Parse lines (each line is "data: {...}")
+                const lines = chunk.split('\n');
+                for (const line of lines) {
+                    if (line.trim().startsWith('data: ')) {
+                        const dataStr = line.trim().slice(6).trim();
+                        if (dataStr === '[DONE]') {
+                            break;
+                        }
+                        try {
+                            const data = JSON.parse(dataStr);
+                            if (data.error) {
+                                if (!aiBubble) {
+                                    aiBubble = appendChatBubble('Error: ' + data.error, 'ai');
+                                } else {
+                                    aiBubble.innerText += '\nError: ' + data.error;
+                                }
+                            } else if (data.text) {
+                                accumulatedResponse += data.text;
+                                if (!aiBubble) {
+                                    aiBubble = appendChatBubble(accumulatedResponse, 'ai');
+                                } else {
+                                    aiBubble.innerText = accumulatedResponse;
+                                }
+                                box.scrollTo({ top: box.scrollHeight, behavior: 'smooth' });
+                            }
+                        } catch (e) {
+                            // Incomplete JSON or other parse error, safe to ignore for intermediate chunks
+                        }
+                    }
+                }
+            }
+
+            if (accumulatedResponse) {
                 // Store in local chat history
                 chatHistory.push(message);
-                chatHistory.push(data.response);
-            } else {
-                appendChatBubble('Sorry, I encountered an error checking your request.', 'ai');
+                chatHistory.push(accumulatedResponse);
             }
-        })
-        .catch(err => {
+
+        } catch (err) {
             console.error(err);
             removeTypingIndicator();
             appendChatBubble('Unable to connect to the AI service. Please try again.', 'ai');
-        });
+        }
     }
 
     function appendChatBubble(text, sender) {
@@ -1421,6 +1468,7 @@
         box.appendChild(div);
         // Smooth scroll to bottom
         box.scrollTo({ top: box.scrollHeight, behavior: 'smooth' });
+        return div;
     }
 
     // Trigger suggestion click to prefill and send message
